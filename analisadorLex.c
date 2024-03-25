@@ -71,7 +71,7 @@ char *buffer = "int\n" //1
                 "/* \n" //13
                 "comentario\n" //14
                 "*/ \n" //15
-                ""; //16
+                " "; //16
 
 // definicao de funcoes
 TInfoAtomo obter_atomo();
@@ -295,19 +295,24 @@ q1:
     }
 
 q3:
-    if(*buffer == '*'){
-        buffer++;
-        goto q4;
-    }
+    // if(*buffer == '*'){
+    //     buffer++;
+    //     goto q4;
+    // }
     while(*buffer != '*'){
-        printf("buffer: '%c' \n",*buffer);
+        //printf("buffer: '%c' \n",*buffer);
         if(*buffer == '\n'){
             buffer++;
-            infoAtomo.linha++;
+            linha++;
         }
         if(*buffer == '\0'){
+            inCommentary = false;
             infoAtomo.atomo = ERRO;
             return infoAtomo;
+        }
+        if(*buffer == '*'){
+            buffer++;
+            goto q4;
         }
         buffer++;
     }
@@ -317,10 +322,12 @@ q3:
 q4:
     if(*buffer == '/'){
         inCommentary = false;
+        buffer++;
         infoAtomo.atomo = FIM_COMENTARIO;
         return infoAtomo;
     }
-    goto q3;
+    else
+        goto q3;
 }
 
 TInfoAtomo reconhece_palavra_reservada(){

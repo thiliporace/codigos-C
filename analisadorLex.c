@@ -17,6 +17,8 @@ typedef enum{
     WHILE,
     IDENTIFICADOR,
     NUMERO,
+    ATRIBUICAO,
+    COMPARACAO,
     EOS
 }TAtomo;
 
@@ -27,12 +29,14 @@ typedef struct{
     char atributo_ID[16];
 }TInfoAtomo;
 
-char *strAtomo[]={"Erro Lexico","BOOL","ELSE","FALSE","IF","INT","MAIN","PRINTF","SCANF","TRUE","VOID", "WHILE", "IDENTIFICADOR","NUMERO","Fim de buffer"};
+char *strAtomo[]={"Erro Lexico","BOOL","ELSE","FALSE","IF","INT","MAIN","PRINTF","SCANF","TRUE","VOID", "WHILE", "IDENTIFICADOR","NUMERO","ATRIBUICAO","COMPARACAO","Fim de buffer"};
 
 int linha = 1;
 char *buffer = "int\n"
                 "bool\n"
-                "   var   \n"
+                "      \n"
+                "=\n"
+                "==\n"
                 "\n"
                "";
 
@@ -41,6 +45,8 @@ TInfoAtomo obter_atomo();
 TInfoAtomo reconhece_id();
 TAtomo reconhece_num();
 TInfoAtomo reconhece_palavra_reservada();
+TInfoAtomo reconhece_barra();
+TInfoAtomo reconhece_atribuicao();
 
 int main(void){
     TInfoAtomo infoAtomo;
@@ -73,16 +79,57 @@ TInfoAtomo obter_atomo(){
         infoAtomo = reconhece_palavra_reservada();
     }
     //2 caso: quando comecar com _ -> funcao de identificadores
-    else if(isdigit(*buffer)){
-        infoAtomo.atomo = reconhece_num();
+    else if(*buffer == '_'){
+        infoAtomo = reconhece_id();
     }
     //3 caso: quando comecar com numero -> funcao de numeros
     
-    
+    //4 caso: se reconhecer um / -> funcao de divisao e comentario
+    else if(*buffer == '/'){
+        infoAtomo = reconhece_barra();
+    }
+    //5 caso: se reconhecer = -> funcao de atribuicao
+    else if(*buffer == '='){
+        infoAtomo = reconhece_atribuicao();
+    }
+
+    // caso: se chegar ao final da string retorna EOS
     else if(*buffer == '\0')
         infoAtomo.atomo = EOS;
     
     infoAtomo.linha = linha;
+    return infoAtomo;
+}
+
+// Reconhece atribuição (=) e comparação (==)
+TInfoAtomo reconhece_atribuicao(){
+    TInfoAtomo infoAtomo;
+    int linhaAtual = infoAtomo.linha;
+    int novaLinha;
+
+q0:
+    if(*buffer == '='){
+        buffer++;
+        goto q1;
+    }
+q1:
+    novaLinha = infoAtomo.linha;
+    if(*buffer == '=' && novaLinha == linhaAtual){
+        infoAtomo.atomo = COMPARACAO;
+        buffer++;
+        return infoAtomo;
+    }
+    else {
+        infoAtomo.atomo = ATRIBUICAO;
+        return infoAtomo;
+    }
+    
+}
+
+// Reconhece divisão (/), comentário (//), começo de comentário (/*) e fim de comentário (*/)
+TInfoAtomo reconhece_barra(){
+    TInfoAtomo infoAtomo;
+
     return infoAtomo;
 }
 
@@ -158,7 +205,8 @@ q1:
         strcpy(string, "");
         return infoAtomo;
     }
-        
+
+    return infoAtomo; 
 }
 
 TInfoAtomo reconhece_id(){

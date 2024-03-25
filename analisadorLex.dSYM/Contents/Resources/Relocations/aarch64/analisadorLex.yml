@@ -1,0 +1,19 @@
+---
+triple:          'arm64-apple-darwin'
+binary-path:     '/Users/thiagoliporace/Documents/makemzi 5 semestri/codigos compiladores/trabalho-compiladores/analisadorLex'
+relocations:
+  - { offsetInCU: 0x26, offset: 0x26, size: 0x8, addend: 0x0, symName: _main, symObjAddr: 0x0, symBinAddr: 0x100002C20, symSize: 0x144 }
+  - { offsetInCU: 0x59, offset: 0x59, size: 0x8, addend: 0x0, symName: _strAtomo, symObjAddr: 0x1300, symBinAddr: 0x100008000, symSize: 0x0 }
+  - { offsetInCU: 0x7F, offset: 0x7F, size: 0x8, addend: 0x0, symName: _linha, symObjAddr: 0x1410, symBinAddr: 0x100008110, symSize: 0x0 }
+  - { offsetInCU: 0x9B, offset: 0x9B, size: 0x8, addend: 0x0, symName: _inCommentary, symObjAddr: 0x3211, symBinAddr: 0x100008120, symSize: 0x0 }
+  - { offsetInCU: 0xB7, offset: 0xB7, size: 0x8, addend: 0x0, symName: _buffer, symObjAddr: 0x1418, symBinAddr: 0x100008118, symSize: 0x0 }
+  - { offsetInCU: 0x1A8, offset: 0x1A8, size: 0x8, addend: 0x0, symName: _main, symObjAddr: 0x0, symBinAddr: 0x100002C20, symSize: 0x144 }
+  - { offsetInCU: 0x1D0, offset: 0x1D0, size: 0x8, addend: 0x0, symName: _obter_atomo, symObjAddr: 0x144, symBinAddr: 0x100002D64, symSize: 0x560 }
+  - { offsetInCU: 0x1F9, offset: 0x1F9, size: 0x8, addend: 0x0, symName: _reconhece_menor, symObjAddr: 0x6A4, symBinAddr: 0x1000032C4, symSize: 0x94 }
+  - { offsetInCU: 0x240, offset: 0x240, size: 0x8, addend: 0x0, symName: _reconhece_maior, symObjAddr: 0x738, symBinAddr: 0x100003358, symSize: 0x94 }
+  - { offsetInCU: 0x287, offset: 0x287, size: 0x8, addend: 0x0, symName: _reconhece_atribuicao, symObjAddr: 0x7CC, symBinAddr: 0x1000033EC, symSize: 0x94 }
+  - { offsetInCU: 0x2CE, offset: 0x2CE, size: 0x8, addend: 0x0, symName: _reconhece_barra, symObjAddr: 0x860, symBinAddr: 0x100003480, symSize: 0x20C }
+  - { offsetInCU: 0x339, offset: 0x339, size: 0x8, addend: 0x0, symName: _reconhece_palavra_reservada, symObjAddr: 0xA6C, symBinAddr: 0x10000368C, symSize: 0x3CC }
+  - { offsetInCU: 0x393, offset: 0x393, size: 0x8, addend: 0x0, symName: _reconhece_id, symObjAddr: 0xE38, symBinAddr: 0x100003A58, symSize: 0x174 }
+  - { offsetInCU: 0x3FD, offset: 0x3FD, size: 0x8, addend: 0x0, symName: _reconhece_num, symObjAddr: 0xFAC, symBinAddr: 0x100003BCC, symSize: 0x16C }
+...

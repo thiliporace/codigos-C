@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
+#include <stdbool.h>
 
 typedef enum{
     ERRO,
@@ -19,6 +20,23 @@ typedef enum{
     NUMERO,
     ATRIBUICAO,
     COMPARACAO,
+    SOMA,
+    SUBTRACAO,
+    DIVISAO,
+    MULTIPLICACAO,
+    MAIOR,
+    MENOR,
+    MAIOR_IGUAL,
+    MENOR_IGUAL,
+    COMENTARIO,
+    COMECO_COMENTARIO,
+    FIM_COMENTARIO,
+    ABRE_PAR,
+    FECHA_PAR,
+    ABRE_CHAVE,
+    FECHA_CHAVE,
+    VIRGULA,
+    PONTO_VIRGULA,
     EOS
 }TAtomo;
 
@@ -29,16 +47,31 @@ typedef struct{
     char atributo_ID[16];
 }TInfoAtomo;
 
-char *strAtomo[]={"Erro Lexico","BOOL","ELSE","FALSE","IF","INT","MAIN","PRINTF","SCANF","TRUE","VOID", "WHILE", "IDENTIFICADOR","NUMERO","ATRIBUICAO","COMPARACAO","Fim de buffer"};
+char *strAtomo[]={"Erro Lexico","BOOL","ELSE","FALSE","IF","INT","MAIN","PRINTF","SCANF","TRUE","VOID", 
+"WHILE", "IDENTIFICADOR","NUMERO","ATRIBUICAO","COMPARACAO","SOMA","SUBTRACAO","DIVISAO","MULTIPLICACAO","MAIOR",
+"MENOR","MAIOR_IGUAL","MENOR_IGUAL","COMENTARIO","COMECO_COMENTARIO","FIM_COMENTARIO","ABRE_PAR","FECHA_PAR",
+"ABRE_CHAVE","FECHA_CHAVE","VIRGULA","PONTO_VIRGULA","Fim de buffer"};
 
 int linha = 1;
-char *buffer = "int\n"
-                "bool\n"
-                "      \n"
-                "=\n"
-                "==\n"
-                "\n"
-               "";
+
+bool inCommentary = false;
+
+char *buffer = "int\n" //1
+                "bool\n" //2
+                "      \n" //3
+                "= \n" //4
+                "== \n" //5
+                " > \n" //6
+                "  - \n" //7
+                " >= \n" //8
+                "== \n" //9
+                " \n" //10
+                "// texto \n" //11
+                "/ \n" //12
+                "/* \n" //13
+                "comentario\n" //14
+                "*/ \n" //15
+                ""; //16
 
 // definicao de funcoes
 TInfoAtomo obter_atomo();
@@ -47,6 +80,8 @@ TAtomo reconhece_num();
 TInfoAtomo reconhece_palavra_reservada();
 TInfoAtomo reconhece_barra();
 TInfoAtomo reconhece_atribuicao();
+TInfoAtomo reconhece_maior();
+TInfoAtomo reconhece_menor();
 
 int main(void){
     TInfoAtomo infoAtomo;
@@ -67,7 +102,7 @@ TInfoAtomo obter_atomo(){
     TInfoAtomo infoAtomo;
     infoAtomo.atomo=ERRO;
     // ignora delimitadores
-    while(*buffer == ' ' || *buffer == '\n' || *buffer == '\t' || *buffer == '\r'){
+    while((*buffer == ' ' || *buffer == '\n' || *buffer == '\t' || *buffer == '\r') && (!inCommentary)) {
         if(*buffer=='\n')
             linha++;
 
@@ -92,7 +127,69 @@ TInfoAtomo obter_atomo(){
     else if(*buffer == '='){
         infoAtomo = reconhece_atribuicao();
     }
-
+    //6 caso: se encontrar + -> soma
+    else if(*buffer == '+'){
+        infoAtomo.atomo = SOMA;
+        buffer++;
+        return infoAtomo;
+    }
+    //7 caso: se encontrar - -> subtracao
+    else if(*buffer == '-'){
+        infoAtomo.atomo = SUBTRACAO;
+        infoAtomo.linha = linha;
+        buffer++;
+        return infoAtomo;
+    }
+    //8 caso: se encontrar > -> funcao do maior
+    else if(*buffer == '>'){
+        infoAtomo = reconhece_maior();
+    }
+    //9 caso: se encontrar < -> funcao do menor
+    else if(*buffer == '<'){
+        infoAtomo = reconhece_menor();
+    }
+    //10 caso: se encontrar * -> multiplicacao
+    else if(*buffer == '*'){
+        infoAtomo.atomo = MULTIPLICACAO;
+        infoAtomo.linha = linha;
+        return infoAtomo;
+    }
+    //11 caso: se encontrar ( -> abre_par
+    else if(*buffer == '('){
+        infoAtomo.atomo = ABRE_PAR;
+        infoAtomo.linha = linha;
+        return infoAtomo;
+    }
+    //12 caso: se encontrar ) -> fecha_par
+    else if(*buffer == ')'){
+        infoAtomo.atomo = FECHA_PAR;
+        infoAtomo.linha = linha;
+        return infoAtomo;
+    }
+    //13 caso: se encontrar { -> abre_chave
+    else if(*buffer == '{'){
+        infoAtomo.atomo = ABRE_CHAVE;
+        infoAtomo.linha = linha;
+        return infoAtomo;
+    }
+    //14 caso: se encontrar } -> fecha_chave
+    else if(*buffer == '}'){
+        infoAtomo.atomo = FECHA_CHAVE;
+        infoAtomo.linha = linha;
+        return infoAtomo;
+    }
+    //15 caso: se encontrar , -> virgula
+    else if(*buffer == ','){
+        infoAtomo.atomo = VIRGULA;
+        infoAtomo.linha = linha;
+        return infoAtomo;
+    }
+    //16 caso: se encontrar ; -> ponto_virgula
+    else if(*buffer == ';'){
+        infoAtomo.atomo = PONTO_VIRGULA;
+        infoAtomo.linha = linha;
+        return infoAtomo;
+    }
     // caso: se chegar ao final da string retorna EOS
     else if(*buffer == '\0')
         infoAtomo.atomo = EOS;
@@ -101,11 +198,51 @@ TInfoAtomo obter_atomo(){
     return infoAtomo;
 }
 
+TInfoAtomo reconhece_menor(){
+    TInfoAtomo infoAtomo;
+
+q0:
+    if(*buffer == '<'){
+        buffer++;
+        goto q1;
+    }
+q1:
+    if(*buffer == '='){
+        infoAtomo.atomo = MENOR_IGUAL;
+        buffer++;
+        return infoAtomo;
+    }
+    else {
+        infoAtomo.atomo = MENOR;
+        return infoAtomo;
+    }
+}
+
+//Reconhece > e >=
+TInfoAtomo reconhece_maior(){
+    TInfoAtomo infoAtomo;
+
+q0:
+    if(*buffer == '>'){
+        buffer++;
+        goto q1;
+    }
+q1:
+    if(*buffer == '='){
+        infoAtomo.atomo = MAIOR_IGUAL;
+        buffer++;
+        return infoAtomo;
+    }
+    else {
+        infoAtomo.atomo = MAIOR;
+        return infoAtomo;
+    }
+    
+}
+
 // Reconhece atribuição (=) e comparação (==)
 TInfoAtomo reconhece_atribuicao(){
     TInfoAtomo infoAtomo;
-    int linhaAtual = infoAtomo.linha;
-    int novaLinha;
 
 q0:
     if(*buffer == '='){
@@ -113,8 +250,7 @@ q0:
         goto q1;
     }
 q1:
-    novaLinha = infoAtomo.linha;
-    if(*buffer == '=' && novaLinha == linhaAtual){
+    if(*buffer == '='){
         infoAtomo.atomo = COMPARACAO;
         buffer++;
         return infoAtomo;
@@ -130,7 +266,61 @@ q1:
 TInfoAtomo reconhece_barra(){
     TInfoAtomo infoAtomo;
 
-    return infoAtomo;
+q0:
+    if(*buffer == '/'){
+        buffer++;
+        goto q1;
+    }
+q1:
+    if(*buffer == '/'){
+        infoAtomo.atomo = COMENTARIO;
+        //Consome qualquer coisa ate chegar no quebra linha
+        while(*buffer != '\n'){
+            if(*buffer == '\0'){
+                infoAtomo.atomo = ERRO;
+                return infoAtomo;
+            }
+            buffer++;
+        }
+        return infoAtomo;
+    }
+    else if(*buffer == '*'){
+        inCommentary = true;
+        buffer++;
+        goto q3;
+    }
+    else{
+        infoAtomo.atomo = DIVISAO;
+        return infoAtomo;
+    }
+
+q3:
+    if(*buffer == '*'){
+        buffer++;
+        goto q4;
+    }
+    while(*buffer != '*'){
+        printf("buffer: '%c' \n",*buffer);
+        if(*buffer == '\n'){
+            buffer++;
+            infoAtomo.linha++;
+        }
+        if(*buffer == '\0'){
+            infoAtomo.atomo = ERRO;
+            return infoAtomo;
+        }
+        buffer++;
+    }
+    // infoAtomo.atomo = ERRO;
+    // return infoAtomo;
+
+q4:
+    if(*buffer == '/'){
+        inCommentary = false;
+        infoAtomo.atomo = FIM_COMENTARIO;
+        return infoAtomo;
+    }
+    goto q3;
 }
 
 TInfoAtomo reconhece_palavra_reservada(){
@@ -146,8 +336,6 @@ q0:
     goto q1;
     
 q1:
-    printf("String:%s",string);
-    printf("\n");
     //Comparacao entre duas strings
     if (strcmp(string,"bool") == 0){
         infoAtomo.atomo = BOOL;

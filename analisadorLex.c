@@ -29,8 +29,6 @@ typedef enum{
     MAIOR_IGUAL,
     MENOR_IGUAL,
     COMENTARIO,
-    COMECO_COMENTARIO,
-    FIM_COMENTARIO,
     ABRE_PAR,
     FECHA_PAR,
     ABRE_CHAVE,
@@ -49,14 +47,14 @@ typedef struct{
 
 char *strAtomo[]={"Erro Lexico","BOOL","ELSE","FALSE","IF","INT","MAIN","PRINTF","SCANF","TRUE","VOID", 
 "WHILE", "IDENTIFICADOR","NUMERO","ATRIBUICAO","COMPARACAO","SOMA","SUBTRACAO","DIVISAO","MULTIPLICACAO","MAIOR",
-"MENOR","MAIOR_IGUAL","MENOR_IGUAL","COMENTARIO","COMECO_COMENTARIO","FIM_COMENTARIO","ABRE_PAR","FECHA_PAR",
+"MENOR","MAIOR_IGUAL","MENOR_IGUAL","COMENTARIO","ABRE_PAR","FECHA_PAR",
 "ABRE_CHAVE","FECHA_CHAVE","VIRGULA","PONTO_VIRGULA","Fim de buffer"};
 
 int linha = 1;
 
 bool inCommentary = false;
 
-char *buffer = "int\n" //1
+char *buffer = "int main(void) {\n" //1
                 "bool\n" //2
                 "      \n" //3
                 "= \n" //4
@@ -71,7 +69,8 @@ char *buffer = "int\n" //1
                 "/* \n" //13
                 "comentario\n" //14
                 "*/ \n" //15
-                " "; //16
+                " { \n" //16
+                " "; //17
 
 // definicao de funcoes
 TInfoAtomo obter_atomo();
@@ -131,14 +130,11 @@ TInfoAtomo obter_atomo(){
     else if(*buffer == '+'){
         infoAtomo.atomo = SOMA;
         buffer++;
-        return infoAtomo;
     }
     //7 caso: se encontrar - -> subtracao
     else if(*buffer == '-'){
         infoAtomo.atomo = SUBTRACAO;
-        infoAtomo.linha = linha;
         buffer++;
-        return infoAtomo;
     }
     //8 caso: se encontrar > -> funcao do maior
     else if(*buffer == '>'){
@@ -151,44 +147,37 @@ TInfoAtomo obter_atomo(){
     //10 caso: se encontrar * -> multiplicacao
     else if(*buffer == '*'){
         infoAtomo.atomo = MULTIPLICACAO;
-        infoAtomo.linha = linha;
-        return infoAtomo;
+        buffer++;
     }
     //11 caso: se encontrar ( -> abre_par
     else if(*buffer == '('){
         infoAtomo.atomo = ABRE_PAR;
-        infoAtomo.linha = linha;
-        return infoAtomo;
+        buffer++;
     }
     //12 caso: se encontrar ) -> fecha_par
     else if(*buffer == ')'){
         infoAtomo.atomo = FECHA_PAR;
-        infoAtomo.linha = linha;
-        return infoAtomo;
+        buffer++;
     }
     //13 caso: se encontrar { -> abre_chave
     else if(*buffer == '{'){
         infoAtomo.atomo = ABRE_CHAVE;
-        infoAtomo.linha = linha;
-        return infoAtomo;
+        buffer++;
     }
     //14 caso: se encontrar } -> fecha_chave
     else if(*buffer == '}'){
         infoAtomo.atomo = FECHA_CHAVE;
-        infoAtomo.linha = linha;
-        return infoAtomo;
+        buffer++;
     }
     //15 caso: se encontrar , -> virgula
     else if(*buffer == ','){
         infoAtomo.atomo = VIRGULA;
-        infoAtomo.linha = linha;
-        return infoAtomo;
+        buffer++;
     }
     //16 caso: se encontrar ; -> ponto_virgula
     else if(*buffer == ';'){
         infoAtomo.atomo = PONTO_VIRGULA;
-        infoAtomo.linha = linha;
-        return infoAtomo;
+        buffer++;
     }
     // caso: se chegar ao final da string retorna EOS
     else if(*buffer == '\0')
@@ -323,7 +312,7 @@ q4:
     if(*buffer == '/'){
         inCommentary = false;
         buffer++;
-        infoAtomo.atomo = FIM_COMENTARIO;
+        infoAtomo.atomo = COMENTARIO;
         return infoAtomo;
     }
     else

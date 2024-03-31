@@ -38,6 +38,7 @@ typedef enum{
     OR,
     AND,
     DIFERENTE_IGUAL,
+    COMENTARIO,
     EOS
 }TAtomo;
 
@@ -50,13 +51,11 @@ typedef struct{
 
 int linha = 1;
 
-bool inCommentary = false;
-
 char *buffer = 
-                // "/* \n" //1
-                // "programa le dois numeros\n" //2
-                // "inteiros e encontra o maior\n" //3
-                // "*/ \n" //4
+                "/*\n" //1
+                "programa le dois numeros\n" //2
+                "inteiros e encontra o maior\n" //3
+                "*/ \n" //4
                 "int main(void){\n" //5
                 "int _num1, _num2;\n" //6
                 "int _maior;\n" //7
@@ -75,13 +74,15 @@ TInfoAtomo obter_atomo();
 TInfoAtomo reconhece_id();
 TAtomo reconhece_num();
 TInfoAtomo reconhece_palavra_reservada();
-TInfoAtomo reconhece_barra();
+void reconhece_barra();
 TInfoAtomo reconhece_atribuicao();
 TInfoAtomo reconhece_maior();
 TInfoAtomo reconhece_menor();
 TInfoAtomo reconhece_and();
 TInfoAtomo reconhece_or();
 TInfoAtomo reconhece_diferente();
+TInfoAtomo reconhece_divisao();
+TInfoAtomo reconhece_comentario();
 
 // Inicio de variaveis sintatico
 
@@ -90,7 +91,7 @@ TInfoAtomo infoAtomo;
 char *strAtomo[]={"Erro Lexico","BOOL","ELSE","FALSE","IF","INT","MAIN","PRINTF","SCANF","TRUE","VOID", 
 "WHILE", "IDENTIFICADOR","NUMERO","ATRIBUICAO","COMPARACAO","SOMA","SUBTRACAO","DIVISAO","MULTIPLICACAO","MAIOR",
 "MENOR","MAIOR_IGUAL","MENOR_IGUAL","ABRE_PAR","FECHA_PAR",
-"ABRE_CHAVE","FECHA_CHAVE","VIRGULA","PONTO_VIRGULA","OR","AND","DIFERENTE_IGUAL","Fim de buffer"};
+"ABRE_CHAVE","FECHA_CHAVE","VIRGULA","PONTO_VIRGULA","OR","AND","DIFERENTE_IGUAL","COMENTARIO","Fim de buffer"};
 
 TAtomo lookahead;
 
@@ -130,7 +131,7 @@ TInfoAtomo obter_atomo(){
     TInfoAtomo infoAtomo;
     infoAtomo.atomo=ERRO;
     // ignora delimitadores
-    while((*buffer == ' ' || *buffer == '\n' || *buffer == '\t' || *buffer == '\r') && (!inCommentary)) {
+    while(*buffer == ' ' || *buffer == '\n' || *buffer == '\t' || *buffer == '\r') {
         if(*buffer=='\n')
             linha++;
 
@@ -151,7 +152,8 @@ TInfoAtomo obter_atomo(){
     }
     //4 caso: se reconhecer um / -> funcao de divisao e comentario
     else if(*buffer == '/'){
-        infoAtomo = reconhece_barra();
+        reconhece_barra();
+        infoAtomo = obter_atomo();
     }
     //5 caso: se reconhecer = -> funcao de atribuicao
     else if(*buffer == '='){
@@ -360,10 +362,7 @@ q1:
     
 }
 
-// Reconhece divisão (/), comentário (//), começo de comentário (/*) e fim de comentário (*/)
-TInfoAtomo reconhece_barra(){
-    TInfoAtomo infoAtomo;
-
+void reconhece_barra(){
 q0:
     if(*buffer == '/'){
         buffer++;
@@ -371,62 +370,60 @@ q0:
     }
 q1:
     if(*buffer == '/'){
-        inCommentary = true;
-        //Consome qualquer coisa ate chegar no quebra linha
         while(*buffer != '\n'){
-            if(*buffer == '\0'){
-                infoAtomo.atomo = ERRO;
-                return infoAtomo;
-            }
             buffer++;
+            if(*buffer == '\n'){
+                linha++;
+                buffer++;
+                return;
+            }
+        }
+
+    }
+    else if(*buffer == '*'){
+        buffer++;
+        while(*buffer != '*'){
             if(*buffer == '\n'){
                 buffer++;
                 linha++;
-                inCommentary = false;
             }
+            if(*buffer == '\0'){
+                infoAtomo.atomo = ERRO;
+                return;
+            }
+            if(*buffer == '*'){
+                buffer++;
+                goto q2;
+            }
+            buffer++;
         }
-        
-    }
-    else if(*buffer == '*'){
-        inCommentary = true;
-        buffer++;
-        goto q3;
+
     }
     else{
-        infoAtomo.atomo = DIVISAO;
-        return infoAtomo;
+        infoAtomo = reconhece_divisao();
     }
-
-q3:
-    
-    while(*buffer != '*'){
-        
-        if(*buffer == '\n'){
-            buffer++;
-            linha++;
-        }
-        if(*buffer == '\0'){
-            inCommentary = false;
-            infoAtomo.atomo = ERRO;
-            return infoAtomo;
-        }
-        if(*buffer == '*'){
-            buffer++;
-            goto q4;
-        }
-        buffer++;
-    }
-    
-
-q4:
+q2:
     if(*buffer == '/'){
-        inCommentary = false;
         buffer++;
-        linha++;
-        
+        return;
     }
-    else
-        goto q3;
+    else{
+        goto q1;
+    }
+}
+
+TInfoAtomo reconhece_comentario(){
+    TInfoAtomo infoAtomo;
+
+    infoAtomo.atomo = COMENTARIO;
+    return infoAtomo;
+}
+
+TInfoAtomo reconhece_divisao(){
+    TInfoAtomo infoAtomo;
+
+    infoAtomo.atomo = DIVISAO;
+    return infoAtomo;
 }
 
 TInfoAtomo reconhece_palavra_reservada(){

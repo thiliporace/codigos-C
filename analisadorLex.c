@@ -64,13 +64,15 @@ char *buffer = "int main(void) {\n" //1
                 " >= \n" //8
                 "== \n" //9
                 " \n" //10
-                "// texto \n" //11
-                "/ \n" //12
-                "/* \n" //13
-                "comentario\n" //14
-                "*/ \n" //15
-                " { \n" //16
-                " "; //17
+                "0xA; \n"//11
+                "_uau=" //12
+                "// texto \n" //13
+                "/ \n" //14
+                "/* \n" //15
+                "comentario\n" //16
+                "*/ \n" //17
+                " { \n" //18
+                " "; //19
 
 // definicao de funcoes
 TInfoAtomo obter_atomo();
@@ -117,7 +119,9 @@ TInfoAtomo obter_atomo(){
         infoAtomo = reconhece_id();
     }
     //3 caso: quando comecar com numero -> funcao de numeros
-    
+    else if(*buffer == '0' && *(buffer + 1) == 'x') {
+        infoAtomo.atomo = reconhece_num();
+    }
     //4 caso: se reconhecer um / -> funcao de divisao e comentario
     else if(*buffer == '/'){
         infoAtomo = reconhece_barra();
@@ -398,76 +402,88 @@ TInfoAtomo reconhece_id(){
     //Marca inicio do buffer
     char *iniLexema;
     iniLexema = buffer;
+
 q0:
-    if(islower(*buffer)){
+    if(*buffer == '_') {
         buffer++;
         goto q1;
     }
+    printf("Erro 1");
     infoAtomo.atomo = ERRO;
     return infoAtomo;
 q1:
-    if(islower(*buffer) || isdigit(*buffer)){
+    if(isalpha(*buffer)) {
         buffer++;
-        goto q1;
+        goto q2;
     }
+    printf("Erro 2");
+    infoAtomo.atomo = ERRO;
+    return infoAtomo;
 
-    if(isupper(*buffer)){
-        infoAtomo.atomo = ERRO;
-        return infoAtomo;
-    }
-    goto q2;
 q2:
-    // recortar do buffer o lexema.
+    if(isalpha(*buffer)) {
+        buffer++;
+        goto q2;
+    } else if(isdigit(*buffer)) {
+        buffer++;
+        goto q2;
+    } else if(*buffer == '=') {
+        buffer++;
+        goto q3;
+    }
+    printf("Erro 3");
+    infoAtomo.atomo = ERRO;
+    return infoAtomo;
 
-    if( buffer-iniLexema <= 15){
+
+q3:
+    // recortar do buffer o lexema.
+    if(buffer-iniLexema <= 15){
         // referencia:https://cplusplus.com/reference/cstring/strncpy/
         strncpy(infoAtomo.atributo_ID,iniLexema,buffer-iniLexema);
         infoAtomo.atributo_ID[buffer-iniLexema]='\0';// finaliza string
         infoAtomo.atomo = IDENTIFICADOR;
-    }
-    else
+    } else {
+        printf("Erro 4");
         infoAtomo.atomo = ERRO;
+    }
 
     return infoAtomo;
-
 }
 
 TAtomo reconhece_num(){
 q0:
-    if(isdigit(*buffer)){
+    if(*buffer == '0' && *(++buffer) == 'x') { // Checa se o potencial número começa com o identificador de hexadecimal
         buffer++;
         goto q1;
     }
-    return ERRO; // [outro]
+    printf("Erro 1");
+    return ERRO;
     
 q1:
-    if(isdigit(*buffer)){ 
+    if(isdigit(*buffer)) { // Se for um número ou A|B|C|D|E|F, vai para o próximo estado
         buffer++;
-        goto q1;
-    }
-    
-    if(*buffer == '.'){
+        goto q2;
+    } else if(*buffer == 'A'|| *buffer =='B' || *buffer =='C' || *buffer =='D' || *buffer =='E' || *buffer =='F') {
         buffer++;
         goto q2;
     }
-    return ERRO; // [outro]
-q2:
-    if(isdigit(*buffer)){
-        buffer++;
-        goto q3;
-    }
-    return ERRO; // [outro]
-q3:
-    if(isdigit(*buffer)){
-        buffer++;
-        goto q3;
-    }
-    if(isalpha(*buffer))
-        return ERRO;
-    
-//    goto q4;
-//q4:
-    // aqui recortar e converter a sequencia de digito para float.
-    return NUMERO;
+    printf("Erro 2");
+    return ERRO;
 
+q2: 
+    if(isdigit(*buffer)) { // Se for um número, A|B|C|D|E|F ou se terminar em ; termina
+        buffer++;
+        goto q2;
+    } else if(*buffer == 'A'|| *buffer =='B' || *buffer =='C' || *buffer =='D' || *buffer =='E' || *buffer =='F') {
+        buffer++;
+        goto q2;
+    } else if(*buffer == ';'){ // Isso aqui está meme
+        goto q3;
+    }
+    printf("Erro 3");
+    return ERRO;
+
+q3: 
+    return NUMERO;
 }

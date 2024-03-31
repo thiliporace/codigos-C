@@ -29,7 +29,6 @@ typedef enum{
     MENOR,
     MAIOR_IGUAL,
     MENOR_IGUAL,
-    COMENTARIO,
     ABRE_PAR,
     FECHA_PAR,
     ABRE_CHAVE,
@@ -53,23 +52,23 @@ int linha = 1;
 
 bool inCommentary = false;
 
-char *buffer = "int main(void) {\n" //1
-                "bool\n" //2
-                "      \n" //3
-                "= \n" //4
-                "== \n" //5
-                " > \n" //6
-                "  - \n" //7
-                " >= \n" //8
-                "== \n" //9
-                " \n" //10
-                "// texto \n" //11
-                "/ \n" //12
-                "/* \n" //13
-                "comentario\n" //14
-                "*/ \n" //15
-                " { \n" //16
-                " "; //17
+char *buffer = 
+                // "/* \n" //1
+                // "programa le dois numeros\n" //2
+                // "inteiros e encontra o maior\n" //3
+                // "*/ \n" //4
+                "int main(void){\n" //5
+                "int _num1, _num2;\n" //6
+                "int _maior;\n" //7
+                "scanf(_num1);\n" //8
+                "scanf(_num2);\n" //9
+                "if( _num1 > _num2 )\n" //10
+                "_maior = _num1;\n" //11
+                "else\n" //12
+                "_maior = _num2; \n" //13
+                "\n" //14
+                "printf(_maior); // imprime o maior valor \n" //15
+                " }"; //16
 
 // definicao de funcoes
 TInfoAtomo obter_atomo();
@@ -90,17 +89,41 @@ TInfoAtomo infoAtomo;
 
 char *strAtomo[]={"Erro Lexico","BOOL","ELSE","FALSE","IF","INT","MAIN","PRINTF","SCANF","TRUE","VOID", 
 "WHILE", "IDENTIFICADOR","NUMERO","ATRIBUICAO","COMPARACAO","SOMA","SUBTRACAO","DIVISAO","MULTIPLICACAO","MAIOR",
-"MENOR","MAIOR_IGUAL","MENOR_IGUAL","COMENTARIO","ABRE_PAR","FECHA_PAR",
+"MENOR","MAIOR_IGUAL","MENOR_IGUAL","ABRE_PAR","FECHA_PAR",
 "ABRE_CHAVE","FECHA_CHAVE","VIRGULA","PONTO_VIRGULA","OR","AND","DIFERENTE_IGUAL","Fim de buffer"};
 
 TAtomo lookahead;
 
+// Inicio de funcoes sintatico
+
 void consome(TAtomo atomo);
+void programa();
+void declaracoes();
+void declaracao();
+void tipo();
+void lista_variavel();
+void comandos();
+void comando();
+void bloco_comandos();
+void atribuicao();
+void comando_if();
+void comando_while();
+void comando_entrada();
+void comando_saida();
+void expressao();
+void expressao_logica();
+void expressao_relacional();
+void op_relacional();
+void expressao_adicao();
+void expressao_multi();
+void operando();
 
 int main(void){
+    infoAtomo = obter_atomo();
+    lookahead = infoAtomo.atomo;
     // funcao para transformar arquivo em string
     printf("Analisando:\n%s\n", buffer);
-    //programa();
+    programa();
 }
 
 TInfoAtomo obter_atomo(){
@@ -348,7 +371,7 @@ q0:
     }
 q1:
     if(*buffer == '/'){
-        infoAtomo.atomo = COMENTARIO;
+        inCommentary = true;
         //Consome qualquer coisa ate chegar no quebra linha
         while(*buffer != '\n'){
             if(*buffer == '\0'){
@@ -356,8 +379,13 @@ q1:
                 return infoAtomo;
             }
             buffer++;
+            if(*buffer == '\n'){
+                buffer++;
+                linha++;
+                inCommentary = false;
+            }
         }
-        return infoAtomo;
+        
     }
     else if(*buffer == '*'){
         inCommentary = true;
@@ -370,12 +398,9 @@ q1:
     }
 
 q3:
-    // if(*buffer == '*'){
-    //     buffer++;
-    //     goto q4;
-    // }
+    
     while(*buffer != '*'){
-        //printf("buffer: '%c' \n",*buffer);
+        
         if(*buffer == '\n'){
             buffer++;
             linha++;
@@ -391,15 +416,14 @@ q3:
         }
         buffer++;
     }
-    // infoAtomo.atomo = ERRO;
-    // return infoAtomo;
+    
 
 q4:
     if(*buffer == '/'){
         inCommentary = false;
         buffer++;
-        infoAtomo.atomo = COMENTARIO;
-        return infoAtomo;
+        linha++;
+        
     }
     else
         goto q3;
@@ -510,7 +534,6 @@ q2:
         buffer++;
         goto q2;
     } else {
-        buffer++;
         goto q3;
     }
     printf("Erro 3");
@@ -571,20 +594,246 @@ q3:
 }
 
 // Inicio funcoes analisador sintatico
-
 void consome(TAtomo atomo){
     if (lookahead == atomo){
+        infoAtomo = obter_atomo();
+        lookahead = infoAtomo.atomo;
+
         printf("%d# %s ",infoAtomo.linha, strAtomo[infoAtomo.atomo]);
         
         if( infoAtomo.atomo == IDENTIFICADOR)
             printf("| %s",infoAtomo.atributo_ID);
         printf("\n");
-
-        infoAtomo = obter_atomo();
-        lookahead = infoAtomo.atomo;
     }
     else{
-        printf("erro sintatico: esperado [%s] encontrado [%s] \n",strAtomo[atomo],strAtomo[lookahead]);
+        printf("erro sintatico: esperado [%s] encontrado [%s], linha: %d \n",strAtomo[atomo],strAtomo[lookahead],infoAtomo.linha);
         exit(1);
+    }
+}
+
+void programa(){
+    consome(INT);
+    consome(MAIN);
+    consome(ABRE_PAR);
+    consome(VOID);
+    consome(FECHA_PAR);
+    consome(ABRE_CHAVE);
+    declaracoes();
+    comandos();
+    consome(FECHA_CHAVE);
+}
+
+void declaracoes(){
+  while(lookahead == INT || lookahead == BOOL) {
+    declaracao();
+  }
+}
+
+void declaracao() {
+  tipo();
+  lista_variavel();
+  consome(PONTO_VIRGULA);
+}
+
+void tipo(){
+    if(lookahead == INT){
+        consome(INT);
+    }
+    else if(lookahead == BOOL){
+        consome(BOOL);
+    }
+    
+}
+
+void lista_variavel(){
+    consome(IDENTIFICADOR);
+
+    if(lookahead == VIRGULA){
+        while(lookahead == VIRGULA){
+            consome(VIRGULA);
+            consome(IDENTIFICADOR);
+        }
+    }
+}
+
+void comandos(){
+    while(lookahead == PONTO_VIRGULA || lookahead == IDENTIFICADOR || lookahead == IF || lookahead == WHILE || lookahead == SCANF || lookahead == PRINTF){
+        comando();
+    }
+}
+
+void comando(){
+    if(lookahead == PONTO_VIRGULA){
+        consome(PONTO_VIRGULA);
+    }
+    else if(lookahead == ABRE_CHAVE){
+        bloco_comandos();
+    }
+    else if(lookahead == IDENTIFICADOR){
+        atribuicao();
+    }
+    else if(lookahead == IF){
+        comando_if();
+    }
+    else if(lookahead == WHILE){
+        comando_while();
+    }
+    else if(lookahead == SCANF){
+        comando_entrada();
+    }
+    else if(lookahead == PRINTF){
+        comando_saida();
+    }
+
+}
+
+void bloco_comandos(){
+    consome(ABRE_CHAVE);
+    comandos();
+    consome(FECHA_CHAVE);
+}
+
+void atribuicao(){
+    consome(IDENTIFICADOR);
+    consome(ATRIBUICAO);
+    expressao();
+    consome(PONTO_VIRGULA);
+}
+
+void comando_if(){
+  consome(IF);
+  consome(ABRE_PAR);
+  expressao();
+  consome(FECHA_PAR);
+  comando();
+  if(lookahead == ELSE) {
+    consome(ELSE);
+    comando();
+  }
+}
+
+void comando_while(){
+    consome(WHILE);
+    consome(ABRE_PAR);
+    expressao();
+    consome(FECHA_PAR);
+    comando();
+}
+
+void comando_entrada(){
+    consome(SCANF);
+    consome(ABRE_PAR);
+    lista_variavel();
+    consome(FECHA_PAR);
+    consome(PONTO_VIRGULA);
+}
+
+void comando_saida() {
+  consome(PRINTF);
+  consome(ABRE_PAR);
+  expressao();
+  if(lookahead == VIRGULA){
+    while(lookahead == VIRGULA) {
+        consome(VIRGULA);
+        expressao();
+    }
+  }
+  consome(FECHA_PAR);
+  consome(PONTO_VIRGULA);
+}
+
+void expressao(){
+    expressao_logica();
+    if (lookahead == OR){
+        while(lookahead == OR){
+            consome(OR);
+            expressao_logica();
+        }
+    }
+}
+
+void expressao_logica() {
+  expressao_relacional();
+  if(lookahead == AND) {
+    while(lookahead == AND) {
+      consome(AND);
+      expressao_relacional();
+    }
+  }
+}
+
+void expressao_relacional(){
+    expressao_adicao();
+    if(lookahead == MENOR || lookahead == MENOR_IGUAL || lookahead == COMPARACAO || lookahead == DIFERENTE_IGUAL || lookahead == MAIOR || lookahead == MAIOR_IGUAL){
+        op_relacional();
+        expressao_adicao();
+    }
+}
+
+void op_relacional(){
+    if(lookahead == MENOR){
+        consome(MENOR);
+    }
+    else if(lookahead == MENOR_IGUAL){
+        consome(MENOR_IGUAL);
+    }
+    else if(lookahead == COMPARACAO){
+        consome(COMPARACAO);
+    }
+    else if(lookahead == DIFERENTE_IGUAL){
+        consome(DIFERENTE_IGUAL);
+    }
+    else if(lookahead == MAIOR){
+        consome(MAIOR);
+    }
+    else if(lookahead == MAIOR_IGUAL){
+        consome(MAIOR_IGUAL);
+    }
+}
+
+void expressao_adicao() {
+  expressao_multi();
+  if(lookahead == SOMA || lookahead == SUBTRACAO) {
+    while(lookahead == SOMA || lookahead == SUBTRACAO) {  
+      if(lookahead == SOMA) {
+        consome(SOMA);
+      } else if(lookahead == SUBTRACAO) {
+        consome(SUBTRACAO);
+      }
+      expressao_multi();
+    }
+  }
+}
+
+void expressao_multi(){
+    operando();
+    if (lookahead == MULTIPLICACAO || lookahead == DIVISAO){
+        while(lookahead == MULTIPLICACAO || lookahead == DIVISAO){
+            if(lookahead == MULTIPLICACAO){
+                consome(MULTIPLICACAO);
+            }
+            else if(lookahead == DIVISAO){
+                consome(DIVISAO);
+            }
+            operando();
+        }
+    }
+}
+
+void operando(){
+    if(lookahead == IDENTIFICADOR){
+        consome(IDENTIFICADOR);
+    }
+    else if(lookahead == NUMERO){
+        consome(NUMERO);
+    }
+    else if(lookahead == TRUE){
+        consome(TRUE);
+    }
+    else if(lookahead == FALSE){
+        consome(FALSE);
+    }
+    else if(lookahead == IDENTIFICADOR){
+        operando();
     }
 }

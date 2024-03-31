@@ -2,6 +2,7 @@
 #include <ctype.h>
 #include <string.h>
 #include <stdbool.h>
+#include <stdlib.h>
 
 typedef enum{
     ERRO,
@@ -35,6 +36,9 @@ typedef enum{
     FECHA_CHAVE,
     VIRGULA,
     PONTO_VIRGULA,
+    OR,
+    AND,
+    DIFERENTE_IGUAL,
     EOS
 }TAtomo;
 
@@ -76,6 +80,9 @@ TInfoAtomo reconhece_barra();
 TInfoAtomo reconhece_atribuicao();
 TInfoAtomo reconhece_maior();
 TInfoAtomo reconhece_menor();
+TInfoAtomo reconhece_and();
+TInfoAtomo reconhece_or();
+TInfoAtomo reconhece_diferente();
 
 // Inicio de variaveis sintatico
 
@@ -84,29 +91,18 @@ TInfoAtomo infoAtomo;
 char *strAtomo[]={"Erro Lexico","BOOL","ELSE","FALSE","IF","INT","MAIN","PRINTF","SCANF","TRUE","VOID", 
 "WHILE", "IDENTIFICADOR","NUMERO","ATRIBUICAO","COMPARACAO","SOMA","SUBTRACAO","DIVISAO","MULTIPLICACAO","MAIOR",
 "MENOR","MAIOR_IGUAL","MENOR_IGUAL","COMENTARIO","ABRE_PAR","FECHA_PAR",
-"ABRE_CHAVE","FECHA_CHAVE","VIRGULA","PONTO_VIRGULA","Fim de buffer"};
+"ABRE_CHAVE","FECHA_CHAVE","VIRGULA","PONTO_VIRGULA","OR","AND","DIFERENTE_IGUAL","Fim de buffer"};
 
 TAtomo lookahead;
 
 void consome(TAtomo atomo);
 
 int main(void){
-    //TInfoAtomo infoAtomo;
+    // funcao para transformar arquivo em string
     printf("Analisando:\n%s\n", buffer);
-    while(1){
-        infoAtomo = obter_atomo();
-        lookahead = infoAtomo.atomo;
-
-        printf("%d# %s ",infoAtomo.linha, strAtomo[infoAtomo.atomo]);
-        if( infoAtomo.atomo == IDENTIFICADOR)
-            printf("| %s",infoAtomo.atributo_ID);
-        printf("\n");
-        if( infoAtomo.atomo == EOS || infoAtomo.atomo == ERRO )
-            break;
-        
-    }    
-
+    //programa();
 }
+
 TInfoAtomo obter_atomo(){
     TInfoAtomo infoAtomo;
     infoAtomo.atomo=ERRO;
@@ -127,7 +123,9 @@ TInfoAtomo obter_atomo(){
         infoAtomo = reconhece_id();
     }
     //3 caso: quando comecar com numero -> funcao de numeros
-    
+    else if(*buffer == '0' && *(buffer + 1) == 'x') {
+        infoAtomo.atomo = reconhece_num();
+    }
     //4 caso: se reconhecer um / -> funcao de divisao e comentario
     else if(*buffer == '/'){
         infoAtomo = reconhece_barra();
@@ -189,12 +187,90 @@ TInfoAtomo obter_atomo(){
         infoAtomo.atomo = PONTO_VIRGULA;
         buffer++;
     }
+    //17 caso: se encontrar | -> funcao de OR
+    else if(*buffer == '|'){
+        infoAtomo = reconhece_or();
+    }
+    //18 caso: se encontrar & -> funcao de AND
+    else if(*buffer == '&'){
+        infoAtomo = reconhece_and();
+    }
+    //19 caso: se encontrar ! -> funcao de DIFERENTE
+    else if(*buffer == '!'){
+        infoAtomo = reconhece_diferente();
+    }
     // caso: se chegar ao final da string retorna EOS
     else if(*buffer == '\0')
         infoAtomo.atomo = EOS;
     
     infoAtomo.linha = linha;
     return infoAtomo;
+}
+
+// Reconhece OR (||)
+TInfoAtomo reconhece_or(){
+    TInfoAtomo infoAtomo;
+
+q0:
+    if(*buffer == '|'){
+        buffer++;
+        goto q1;
+    }
+q1:
+    if(*buffer == '|'){
+        infoAtomo.atomo = OR;
+        buffer++;
+        return infoAtomo;
+    }
+    else {
+        infoAtomo.atomo = ERRO;
+        return infoAtomo;
+    }
+    
+}
+
+// Reconhece AND (&&)
+TInfoAtomo reconhece_and(){
+    TInfoAtomo infoAtomo;
+
+q0:
+    if(*buffer == '&'){
+        buffer++;
+        goto q1;
+    }
+q1:
+    if(*buffer == '&'){
+        infoAtomo.atomo = AND;
+        buffer++;
+        return infoAtomo;
+    }
+    else {
+        infoAtomo.atomo = ERRO;
+        return infoAtomo;
+    }
+    
+}
+
+// Reconhece DIFERENTE_IGUAL (!=)
+TInfoAtomo reconhece_diferente(){
+    TInfoAtomo infoAtomo;
+
+q0:
+    if(*buffer == '!'){
+        buffer++;
+        goto q1;
+    }
+q1:
+    if(*buffer == '='){
+        infoAtomo.atomo = DIFERENTE_IGUAL;
+        buffer++;
+        return infoAtomo;
+    }
+    else {
+        infoAtomo.atomo = ERRO;
+        return infoAtomo;
+    }
+    
 }
 
 TInfoAtomo reconhece_menor(){
@@ -408,84 +484,102 @@ TInfoAtomo reconhece_id(){
     //Marca inicio do buffer
     char *iniLexema;
     iniLexema = buffer;
+
 q0:
-    if(islower(*buffer)){
+    if(*buffer == '_') {
         buffer++;
         goto q1;
     }
+    printf("Erro 1");
     infoAtomo.atomo = ERRO;
     return infoAtomo;
 q1:
-    if(islower(*buffer) || isdigit(*buffer)){
+    if(isalpha(*buffer)) {
         buffer++;
-        goto q1;
+        goto q2;
     }
+    printf("Erro 2");
+    infoAtomo.atomo = ERRO;
+    return infoAtomo;
 
-    if(isupper(*buffer)){
-        infoAtomo.atomo = ERRO;
-        return infoAtomo;
-    }
-    goto q2;
 q2:
-    // recortar do buffer o lexema.
+    if(isalpha(*buffer)) {
+        buffer++;
+        goto q2;
+    } else if(isdigit(*buffer)) {
+        buffer++;
+        goto q2;
+    } else {
+        buffer++;
+        goto q3;
+    }
+    printf("Erro 3");
+    infoAtomo.atomo = ERRO;
+    return infoAtomo;
 
-    if( buffer-iniLexema <= 15){
+
+q3:
+    // recortar do buffer o lexema.
+    if(buffer-iniLexema <= 15){
         // referencia:https://cplusplus.com/reference/cstring/strncpy/
         strncpy(infoAtomo.atributo_ID,iniLexema,buffer-iniLexema);
         infoAtomo.atributo_ID[buffer-iniLexema]='\0';// finaliza string
         infoAtomo.atomo = IDENTIFICADOR;
-    }
-    else
+    } else {
+        printf("Erro 4");
         infoAtomo.atomo = ERRO;
+    }
 
     return infoAtomo;
-
 }
 
 TAtomo reconhece_num(){
 q0:
-    if(isdigit(*buffer)){
+    if(*buffer == '0' && *(++buffer) == 'x') { // Checa se o potencial número começa com o identificador de hexadecimal
         buffer++;
         goto q1;
     }
-    return ERRO; // [outro]
+    printf("Erro 1");
+    return ERRO;
     
 q1:
-    if(isdigit(*buffer)){ 
+    if(isdigit(*buffer)) { // Se for um número ou A|B|C|D|E|F, vai para o próximo estado
         buffer++;
-        goto q1;
-    }
-    
-    if(*buffer == '.'){
+        goto q2;
+    } else if(*buffer == 'A'|| *buffer =='B' || *buffer =='C' || *buffer =='D' || *buffer =='E' || *buffer =='F') {
         buffer++;
         goto q2;
     }
-    return ERRO; // [outro]
-q2:
-    if(isdigit(*buffer)){
-        buffer++;
-        goto q3;
-    }
-    return ERRO; // [outro]
-q3:
-    if(isdigit(*buffer)){
-        buffer++;
-        goto q3;
-    }
-    if(isalpha(*buffer))
-        return ERRO;
-    
-//    goto q4;
-//q4:
-    // aqui recortar e converter a sequencia de digito para float.
-    return NUMERO;
+    printf("Erro 2");
+    return ERRO;
 
+q2: 
+    if(isdigit(*buffer)) { // Se for um número, A|B|C|D|E|F ou se terminar em ; termina
+        buffer++;
+        goto q2;
+    } else if(*buffer == 'A'|| *buffer =='B' || *buffer =='C' || *buffer =='D' || *buffer =='E' || *buffer =='F') {
+        buffer++;
+        goto q2;
+    } else { // Isso aqui está meme
+        goto q3;
+    }
+    printf("Erro 3");
+    return ERRO;
+
+q3: 
+    return NUMERO;
 }
 
 // Inicio funcoes analisador sintatico
 
 void consome(TAtomo atomo){
     if (lookahead == atomo){
+        printf("%d# %s ",infoAtomo.linha, strAtomo[infoAtomo.atomo]);
+        
+        if( infoAtomo.atomo == IDENTIFICADOR)
+            printf("| %s",infoAtomo.atributo_ID);
+        printf("\n");
+
         infoAtomo = obter_atomo();
         lookahead = infoAtomo.atomo;
     }

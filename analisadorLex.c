@@ -427,7 +427,7 @@ q2:
     } else if(isdigit(*buffer)) {
         buffer++;
         goto q2;
-    } else if(*buffer == '=') {
+    } else {
         buffer++;
         goto q3;
     }
@@ -478,7 +478,7 @@ q2:
     } else if(*buffer == 'A'|| *buffer =='B' || *buffer =='C' || *buffer =='D' || *buffer =='E' || *buffer =='F') {
         buffer++;
         goto q2;
-    } else if(*buffer == ';'){ // Isso aqui está meme
+    } else { // Isso aqui está meme
         goto q3;
     }
     printf("Erro 3");

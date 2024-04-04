@@ -830,7 +830,9 @@ void operando(){
     else if(lookahead == FALSE){
         consome(FALSE);
     }
-    else if(lookahead == IDENTIFICADOR){
-        operando();
+    else if(lookahead == ABRE_PAR){
+        consome(ABRE_PAR);
+        expressao();
+        consome(FECHA_PAR);
     }
 }

@@ -50,24 +50,7 @@ typedef struct{
 }TInfoAtomo;
 
 int linha = 1;
-
-char *buffer = 
-                "/*\n" //1
-                "programa le dois numeros\n" //2
-                "inteiros e encontra o maior\n" //3
-                "*/ \n" //4
-                "int main(void){\n" //5
-                "int _num1, _num2;\n" //6
-                "int _maior;\n" //7
-                "scanf(_num1);\n" //8
-                "scanf(_num2);\n" //9
-                "if( _num1 > _num2 )\n" //10
-                "_maior = _num1;\n" //11
-                "else\n" //12
-                "_maior = _num2; \n" //13
-                "\n" //14
-                "printf(_maior); // imprime o maior valor \n" //15
-                " }"; //16
+char *buffer;
 
 // definicao de funcoes
 TInfoAtomo obter_atomo();
@@ -119,12 +102,54 @@ void expressao_adicao();
 void expressao_multi();
 void operando();
 
-int main(void){
+int main(void) {
+    FILE *arquivo;
+    int caractere_lido;
+    size_t tamanho_arquivo;
+    
+    // Tenta fazer a leitura do arquivo
+    arquivo = fopen("programa.txt", "r");
+    if(arquivo == NULL) {
+        printf("Erro ao abrir o arquivo.");
+        return 1;
+    }
+
+    // Obter o tamanho do arquivo
+    fseek(arquivo, 0, SEEK_END);
+    tamanho_arquivo = ftell(arquivo);
+    fseek(arquivo, 0, SEEK_SET);
+
+    // Alocar memória para o buffer
+    buffer = (char*) malloc((tamanho_arquivo * sizeof(char)) + 1);
+    if(buffer == NULL) {
+        printf("Erro ao alocar memória para o buffer.");
+        fclose(arquivo);
+        return 1;
+    }
+    
+    char* primeiro_lista = buffer;
+
+    // Carrega o conteúdo do arquivo no buffer
+    while ((caractere_lido = fgetc(arquivo)) != EOF) {
+        *buffer = caractere_lido;
+        buffer++;
+    }
+    buffer = primeiro_lista;
+ 
+    // Fecha o arquivo
+    fclose(arquivo);
+        
+    // funcao para transformar arquivo em string
+    printf("Analisando:\n%s \n\n", buffer);
+    printf("............................................... \n\n");
+
+    // Depois de realizar a leitura do arquivo, começa a análise 
     infoAtomo = obter_atomo();
     lookahead = infoAtomo.atomo;
-    // funcao para transformar arquivo em string
-    printf("Analisando:\n%s\n", buffer);
     programa();
+
+    // Desalocar a memória do malloc 
+    free(primeiro_lista);
 }
 
 TInfoAtomo obter_atomo(){
@@ -134,7 +159,6 @@ TInfoAtomo obter_atomo(){
     while(*buffer == ' ' || *buffer == '\n' || *buffer == '\t' || *buffer == '\r') {
         if(*buffer=='\n')
             linha++;
-
         buffer++;
     }
     // Analisador Léxico: Analisar o alfabeto 

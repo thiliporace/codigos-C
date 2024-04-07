@@ -1,16 +1,15 @@
 #include <stdio.h>
 #include <ctype.h>
 
-int Impar_a_par_b(char* entrada);
+int AFD(char* entrada);
 
 int main(){
     char*  entrada = "abbabba";
-    int resultado = Impar_a_par_b(entrada);
+    int resultado = AFD(entrada);
     printf("%d",resultado);
 }
 
-int Impar_a_par_b(char* entrada){
-//PaPb
+int AFD(char* entrada){
 q0:
     if(*entrada == 'a'){
         entrada++;
@@ -18,40 +17,47 @@ q0:
     }
     else if(*entrada == 'b'){
         entrada++;
-        goto q2;
+        goto q3;
     }
     return 0;
-//IaPb
 q1:
     if(*entrada == 'a'){
         entrada++;
-        goto q0;
+        goto q2;
+    }
+    else if(*entrada == 'b'){
+        entrada++;
+        goto q3;
+    }
+    return 0;
+q2:
+    if(*entrada == 'a'){
+        entrada++;
+        goto q2;
     }
     else if(*entrada == 'b'){
         entrada++;
         goto q3;
     }
     return 1;
-//PaIb
-q2:
-    if(*entrada == 'a'){
-        entrada++;
-        goto q3;
-    }
-    else if(*entrada == 'b'){
-        entrada++;
-        goto q0;
-    }
-    return 0;
-//IaIb
 q3:
     if(*entrada == 'a'){
         entrada++;
-        goto q2;
+        goto q1;
     }
     else if(*entrada == 'b'){
         entrada++;
-        goto q1;
+        goto q4;
     }
     return 0;
+q4:
+    if(*entrada == 'a'){
+        entrada++;
+        goto q1;
+    }
+    else if(*entrada == 'b'){
+        entrada++;
+        goto q4;
+    }
+    return 1;
 }

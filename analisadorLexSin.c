@@ -1,3 +1,7 @@
+
+//Thiago Leandro Liporace, 10395816
+//Laura C. Balbachan dos Santos, 10390823
+
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
@@ -321,7 +325,7 @@ q1:
     }
     
 }
-
+//Reconhece < e <=
 TInfoAtomo reconhece_menor(){
     TInfoAtomo infoAtomo;
 
@@ -463,6 +467,7 @@ q0:
     goto q1;
     
 q1:
+    infoAtomo.atomo = ERRO;
     //Comparacao entre duas strings
     if (strcmp(string,"bool") == 0){
         infoAtomo.atomo = BOOL;
@@ -520,6 +525,7 @@ q1:
         strcpy(string, "");
         return infoAtomo;
     }
+    
 
     return infoAtomo; 
 }

@@ -4,19 +4,20 @@
 int AFD(char* entrada);
 
 int main(){
-    char*  entrada = "a9_9";
+    char*  entrada = "var1";
     int resultado = AFD(entrada);
     printf("%d",resultado);
 }
 
 int AFD(char* entrada){
 q0:
-    if(islower(*entrada) || isupper(*entrada)){
+    if(isalpha(*entrada)){
         entrada++;
         goto q1;
     }
+    return 0;
 q1:
-    if(islower(*entrada) || isupper(*entrada) || isdigit(*entrada)){
+    if(isalpha(*entrada) || isdigit(*entrada)){
         entrada++;
         goto q1;
     }
@@ -25,21 +26,13 @@ q1:
         goto q3;
     }
     return 0;
-q2:
-    if(*entrada == '_'){
+q3:
+    if(isalpha(*entrada) || isdigit(*entrada)){
         entrada++;
         goto q3;
-    }
-q3:
-    if(islower(*entrada) || isupper(*entrada)){
-        entrada++;
-        if(isdigit(*entrada)){
-            entrada++;
-            goto q3;
-        }
-        return 0;
         }
     else if(*entrada == '\0'){
         return 1;
     }
+    return 0;
 }

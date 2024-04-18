@@ -112,6 +112,7 @@ int main(void) {
     size_t tamanho_arquivo;
     
     // Tenta fazer a leitura do arquivo
+    //arquivo = fopen("programa.txt", "r");
     arquivo = fopen("programa.txt", "r");
     if(arquivo == NULL) {
         printf("Erro ao abrir o arquivo.");
@@ -411,6 +412,7 @@ q1:
     else if(*buffer == '*'){
         buffer++;
         while(*buffer != '*'){
+            buffer++;
             if(*buffer == '\n'){
                 buffer++;
                 linha++;
@@ -423,7 +425,7 @@ q1:
                 buffer++;
                 goto q2;
             }
-            buffer++;
+            
         }
 
     }
@@ -684,7 +686,7 @@ void lista_variavel(){
 }
 
 void comandos(){
-    while(lookahead == PONTO_VIRGULA || lookahead == IDENTIFICADOR || lookahead == IF || lookahead == WHILE || lookahead == SCANF || lookahead == PRINTF){
+    while(lookahead == PONTO_VIRGULA || lookahead == ABRE_CHAVE || lookahead == IDENTIFICADOR || lookahead == IF || lookahead == WHILE || lookahead == SCANF || lookahead == PRINTF){
         comando();
     }
 }

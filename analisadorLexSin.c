@@ -53,6 +53,21 @@ typedef struct{
     char atributo_ID[16];
 }TInfoAtomo;
 
+typedef struct{
+    int endereco;
+    char nome[16];
+    char tipo[5];
+}Identificador_Struct;
+
+int endereco_identificador = 0;
+int total_variaveis = 1;
+int endereco_atual = 0;
+
+bool isScanning = false;
+
+Identificador_Struct ids_atuais[20];
+Identificador_Struct ids_globais[20];
+
 int linha = 1;
 char *buffer;
 
@@ -647,6 +662,7 @@ void programa(){
     consome(VOID);
     consome(FECHA_PAR);
     consome(ABRE_CHAVE);
+    printf("INPP \n");
     declaracoes();
     comandos();
     consome(FECHA_CHAVE);
@@ -655,32 +671,76 @@ void programa(){
 void declaracoes(){
   while(lookahead == INT || lookahead == BOOL) {
     declaracao();
+    total_variaveis++;
   }
+  printf("AMEM %i \n",total_variaveis);
 }
 
 void declaracao() {
   tipo();
+  isScanning = false;
   lista_variavel();
   consome(PONTO_VIRGULA);
 }
 
 void tipo(){
+    Identificador_Struct identificador_atual;
     if(lookahead == INT){
         consome(INT);
+        strncpy(identificador_atual.tipo,"INT",(sizeof identificador_atual.tipo)-1);
     }
     else if(lookahead == BOOL){
         consome(BOOL);
+        strncpy(identificador_atual.tipo,"BOOL",(sizeof identificador_atual.tipo)-1);
     }
     
 }
 
 void lista_variavel(){
+    Identificador_Struct identificador_atual;
+    memset(ids_atuais, 0, sizeof(ids_atuais));
+    endereco_atual = 0;
+    
+
     consome(IDENTIFICADOR);
+
+    if(!isScanning){
+        strncpy(identificador_atual.nome,infoAtomo.atributo_ID,(sizeof identificador_atual.nome)-1);
+        identificador_atual.endereco = endereco_identificador;
+        ids_globais[endereco_identificador] = identificador_atual;
+        endereco_identificador++;
+    }
+    else{
+        strncpy(identificador_atual.nome,infoAtomo.atributo_ID,(sizeof identificador_atual.nome)-1);
+        
+        for(int i =0;i<endereco_identificador;i++){
+            if (strcmp(identificador_atual.nome,ids_globais[i].nome) == 0){
+                ids_atuais[endereco_atual] = ids_globais[i];
+                printf("endereco %i \n",ids_globais[i].endereco);
+                endereco_atual++;
+            }
+        }
+    }
 
     if(lookahead == VIRGULA){
         while(lookahead == VIRGULA){
             consome(VIRGULA);
             consome(IDENTIFICADOR);
+            if(!isScanning){
+                strncpy(identificador_atual.nome,infoAtomo.atributo_ID,(sizeof identificador_atual.nome)-1);
+                identificador_atual.endereco = endereco_identificador;
+                ids_globais[endereco_identificador] = identificador_atual;
+                endereco_identificador++;
+            }
+            else{
+                strncpy(identificador_atual.nome,infoAtomo.atributo_ID,(sizeof identificador_atual.nome)-1);
+                for(int i =0;i<endereco_identificador;i++){
+                    if (strcmp(identificador_atual.nome,ids_globais[i].nome) == 0){
+                        ids_atuais[endereco_atual] = ids_globais[i];
+                        endereco_atual++;
+                    }
+                }
+            }
         }
     }
 }
@@ -752,9 +812,22 @@ void comando_while(){
 void comando_entrada(){
     consome(SCANF);
     consome(ABRE_PAR);
+
+    isScanning = true;
     lista_variavel();
+    printf("LEIT \n");
+    //for
+    int length = sizeof(ids_atuais) / sizeof(ids_atuais[0]);
+    for(int i = 0;i<endereco_atual;i++){
+        printf("ARMZ %i \n", ids_atuais[i].endereco);
+        printf("CRCT %i \n", ids_atuais[i].endereco);
+    }
+
     consome(FECHA_PAR);
     consome(PONTO_VIRGULA);
+
+    
+    
 }
 
 void comando_saida() {
@@ -826,8 +899,10 @@ void expressao_adicao() {
     while(lookahead == SOMA || lookahead == SUBTRACAO) {  
       if(lookahead == SOMA) {
         consome(SOMA);
+        printf("SOMA\n");
       } else if(lookahead == SUBTRACAO) {
         consome(SUBTRACAO);
+        printf("SUBT\n");
       }
       expressao_multi();
     }
@@ -840,9 +915,11 @@ void expressao_multi(){
         while(lookahead == MULTIPLICACAO || lookahead == DIVISAO){
             if(lookahead == MULTIPLICACAO){
                 consome(MULTIPLICACAO);
+                printf("MULTI\n");
             }
             else if(lookahead == DIVISAO){
                 consome(DIVISAO);
+                printf("DIVI\n");
             }
             operando();
         }

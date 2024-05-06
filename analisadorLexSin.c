@@ -59,14 +59,15 @@ typedef struct{
     char tipo[5];
 }Identificador_Struct;
 
-int endereco_identificador = 0;
-int total_variaveis = 1;
-int endereco_atual = 0;
+typedef struct{
+    Identificador_Struct* array_identificadores[20];
+}Tabela_Simbolos;
+
+int total_variaveis = 0;
 
 bool isScanning = false;
 
-Identificador_Struct ids_atuais[20];
-Identificador_Struct ids_globais[20];
+Tabela_Simbolos tabela;
 
 int linha = 1;
 char *buffer;
@@ -120,6 +121,8 @@ void op_relacional();
 void expressao_adicao();
 void expressao_multi();
 void operando();
+
+void AdicionarVariavel();
 
 int main(void) {
     FILE *arquivo;
@@ -671,7 +674,6 @@ void programa(){
 void declaracoes(){
   while(lookahead == INT || lookahead == BOOL) {
     declaracao();
-    total_variaveis++;
   }
   printf("AMEM %i \n",total_variaveis);
 }
@@ -698,48 +700,47 @@ void tipo(){
 
 void lista_variavel(){
     Identificador_Struct identificador_atual;
-    memset(ids_atuais, 0, sizeof(ids_atuais));
-    endereco_atual = 0;
     
+    if(!isScanning){
+        AdicionarVariavel();
+    }
+    else{
+       bool isInArray = false;
+
+        for(int i = 0;i< total_variaveis;i++){
+            if (strcmp(tabela.array_identificadores[i]->nome, infoAtomo.atributo_ID) == 0){
+                isInArray = true;
+                printf("ARMZ %d \n",tabela.array_identificadores[i]->endereco);
+            }
+            if (!isInArray){
+                printf("Erro Semantico, %s não foi declarado",infoAtomo.atributo_ID);
+            }
+        }
+        
+    }
 
     consome(IDENTIFICADOR);
 
-    if(!isScanning){
-        strncpy(identificador_atual.nome,infoAtomo.atributo_ID,(sizeof identificador_atual.nome)-1);
-        identificador_atual.endereco = endereco_identificador;
-        ids_globais[endereco_identificador] = identificador_atual;
-        endereco_identificador++;
-    }
-    else{
-        strncpy(identificador_atual.nome,infoAtomo.atributo_ID,(sizeof identificador_atual.nome)-1);
-        
-        for(int i =0;i<endereco_identificador;i++){
-            if (strcmp(identificador_atual.nome,ids_globais[i].nome) == 0){
-                ids_atuais[endereco_atual] = ids_globais[i];
-                printf("endereco %i \n",ids_globais[i].endereco);
-                endereco_atual++;
-            }
-        }
-    }
+    
 
     if(lookahead == VIRGULA){
         while(lookahead == VIRGULA){
             consome(VIRGULA);
             consome(IDENTIFICADOR);
             if(!isScanning){
-                strncpy(identificador_atual.nome,infoAtomo.atributo_ID,(sizeof identificador_atual.nome)-1);
-                identificador_atual.endereco = endereco_identificador;
-                ids_globais[endereco_identificador] = identificador_atual;
-                endereco_identificador++;
+                AdicionarVariavel();
             }
             else{
-                strncpy(identificador_atual.nome,infoAtomo.atributo_ID,(sizeof identificador_atual.nome)-1);
-                for(int i =0;i<endereco_identificador;i++){
-                    if (strcmp(identificador_atual.nome,ids_globais[i].nome) == 0){
-                        ids_atuais[endereco_atual] = ids_globais[i];
-                        endereco_atual++;
-                    }
+               bool isInArray = false;
+
+            for(int i = 0;i< total_variaveis;i++){
+                if (strcmp(tabela.array_identificadores[i]->nome, infoAtomo.atributo_ID) == 0){
+                    isInArray = true;
                 }
+                if (!isInArray){
+                    printf("Erro Semantico, %s não foi declarado",infoAtomo.atributo_ID);
+                }
+            }
             }
         }
     }
@@ -816,12 +817,6 @@ void comando_entrada(){
     isScanning = true;
     lista_variavel();
     printf("LEIT \n");
-    //for
-    int length = sizeof(ids_atuais) / sizeof(ids_atuais[0]);
-    for(int i = 0;i<endereco_atual;i++){
-        printf("ARMZ %i \n", ids_atuais[i].endereco);
-        printf("CRCT %i \n", ids_atuais[i].endereco);
-    }
 
     consome(FECHA_PAR);
     consome(PONTO_VIRGULA);
@@ -928,20 +923,44 @@ void expressao_multi(){
 
 void operando(){
     if(lookahead == IDENTIFICADOR){
+        Identificador_Struct atual;
+        for(int i = 0;i<total_variaveis;i++){
+            if (strcmp(tabela.array_identificadores[i]->nome,infoAtomo.atributo_ID) == 0){
+                printf("CRVL %d \n",tabela.array_identificadores[i]->endereco);
+            }
+        }
+        
         consome(IDENTIFICADOR);
     }
     else if(lookahead == NUMERO){
+        printf("CRCT \n"); //valor do numero aqui
         consome(NUMERO);
     }
-    else if(lookahead == TRUE){
-        consome(TRUE);
-    }
-    else if(lookahead == FALSE){
-        consome(FALSE);
-    }
+    // else if(lookahead == TRUE){
+    //     consome(TRUE);
+    // }
+    // else if(lookahead == FALSE){
+    //     consome(FALSE);
+    // }
     else if(lookahead == ABRE_PAR){
         consome(ABRE_PAR);
         expressao();
         consome(FECHA_PAR);
     }
+
+}
+
+void AdicionarVariavel(){
+    for(int i = 0;i<20;i++){
+        if (strcmp(tabela.array_identificadores[i] -> nome,infoAtomo.atributo_ID) == 0){
+            printf("JA EXISTE VARIAVEL, Erro semântico\n");
+        }
+    }
+
+    Identificador_Struct* atual = (Identificador_Struct*)malloc(sizeof(Identificador_Struct));
+    atual->endereco = total_variaveis;
+    strcpy(atual->nome,infoAtomo.atributo_ID);
+
+    tabela.array_identificadores[total_variaveis] = atual;
+    total_variaveis++;
 }

@@ -686,62 +686,61 @@ void declaracao() {
 }
 
 void tipo(){
-    Identificador_Struct identificador_atual;
     if(lookahead == INT){
         consome(INT);
-        strncpy(identificador_atual.tipo,"INT",(sizeof identificador_atual.tipo)-1);
+        // strcpy(identificador_atual.tipo,"INT");
     }
     else if(lookahead == BOOL){
         consome(BOOL);
-        strncpy(identificador_atual.tipo,"BOOL",(sizeof identificador_atual.tipo)-1);
+        // strcpy(identificador_atual.tipo,"BOOL");
     }
     
 }
 
 void lista_variavel(){
-    Identificador_Struct identificador_atual;
-    
-    if(!isScanning){
-        AdicionarVariavel();
-    }
-    else{
-       bool isInArray = false;
+    // Identificador_Struct identificador_atual;
+   
+    // if(!isScanning){
+    //     AdicionarVariavel();
+    // }
+    // else{
+    //    bool isInArray = false;
 
-        for(int i = 0;i< total_variaveis;i++){
-            if (strcmp(tabela.array_identificadores[i]->nome, infoAtomo.atributo_ID) == 0){
-                isInArray = true;
-                printf("ARMZ %d \n",tabela.array_identificadores[i]->endereco);
-            }
-            if (!isInArray){
-                printf("Erro Semantico, %s não foi declarado",infoAtomo.atributo_ID);
-            }
-        }
+    //     for(int i = 0;i< total_variaveis;i++){
+    //         if (strcmp(tabela.array_identificadores[i]->nome, infoAtomo.atributo_ID) == 0){
+    //             isInArray = true;
+    //             printf("ARMZ %d \n",tabela.array_identificadores[i]->endereco);
+    //         }
+    //         if (!isInArray){
+    //             printf("Erro Semantico, %s não foi declarado",infoAtomo.atributo_ID);
+    //         }
+    //     }
         
-    }
-
-    consome(IDENTIFICADOR);
-
+    // }
     
+    consome(IDENTIFICADOR);
 
     if(lookahead == VIRGULA){
         while(lookahead == VIRGULA){
+            
+            // if(!isScanning){
+            //     AdicionarVariavel();
+            // }
+            // else{
+            //    bool isInArray = false;
+
+            // for(int i = 0;i< total_variaveis;i++){
+            //     if (strcmp(tabela.array_identificadores[i]->nome, infoAtomo.atributo_ID) == 0){
+            //         isInArray = true;
+            //     }
+            //     if (!isInArray){
+            //         printf("Erro Semantico, %s não foi declarado",infoAtomo.atributo_ID);
+            //     }
+            // }
+            // }
+
             consome(VIRGULA);
             consome(IDENTIFICADOR);
-            if(!isScanning){
-                AdicionarVariavel();
-            }
-            else{
-               bool isInArray = false;
-
-            for(int i = 0;i< total_variaveis;i++){
-                if (strcmp(tabela.array_identificadores[i]->nome, infoAtomo.atributo_ID) == 0){
-                    isInArray = true;
-                }
-                if (!isInArray){
-                    printf("Erro Semantico, %s não foi declarado",infoAtomo.atributo_ID);
-                }
-            }
-            }
         }
     }
 }
@@ -950,6 +949,7 @@ void operando(){
 
 }
 
+//crashando aqui
 void AdicionarVariavel(){
     for(int i = 0;i<20;i++){
         if (strcmp(tabela.array_identificadores[i] -> nome,infoAtomo.atributo_ID) == 0){
@@ -958,6 +958,7 @@ void AdicionarVariavel(){
     }
 
     Identificador_Struct* atual = (Identificador_Struct*)malloc(sizeof(Identificador_Struct));
+    // Identificador_Struct* atual;
     atual->endereco = total_variaveis;
     strcpy(atual->nome,infoAtomo.atributo_ID);
 

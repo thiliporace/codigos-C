@@ -1,15 +1,14 @@
-/* 
-programa le dois numeros
-inteiros e encontra o maior
+/*
+programa calcula o fatorial de um numero lido
 */
 int main(void){
-int _num1, _num2;
-int _maior;
-scanf(_num1);
-scanf(_num2);
-if( _num1 > _num2 )
-_maior = _num1;
-else 
-_maior = _num2;
-printf(_maior); // imprime o maior valor
+    int _fat,_Num,_cont;
+    scanf(_Num);
+    _fat = 0x1;
+    _cont = 0x2;
+    while(_cont <= _Num){
+        _fat = _fat*_cont;
+        _cont = _cont + 0x1;
+    }
+    printf(_fat); // imprime o fatorial calculado
 }

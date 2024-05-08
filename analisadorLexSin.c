@@ -64,6 +64,7 @@ typedef struct{
 }Tabela_Simbolos;
 
 int total_variaveis = 0;
+int contador = 0;
 
 bool isScanning = false;
 
@@ -123,6 +124,7 @@ void expressao_multi();
 void operando();
 
 void AdicionarVariavel();
+int Proximo_rotulo();
 
 int main(void) {
     FILE *arquivo;
@@ -646,11 +648,11 @@ void consome(TAtomo atomo){
         infoAtomo = obter_atomo();
         lookahead = infoAtomo.atomo;
 
-        printf("%d# %s ",infoAtomo.linha, strAtomo[infoAtomo.atomo]);
+        // printf("%d# %s ",infoAtomo.linha, strAtomo[infoAtomo.atomo]);
         
-        if( infoAtomo.atomo == IDENTIFICADOR)
-            printf("| %s",infoAtomo.atributo_ID);
-        printf("\n");
+        // if( infoAtomo.atomo == IDENTIFICADOR)
+        //     printf("| %s",infoAtomo.atributo_ID);
+        // printf("\n");
     }
     else{
         printf("erro sintatico: esperado [%s] encontrado [%s], linha: %d \n",strAtomo[atomo],strAtomo[lookahead],infoAtomo.linha);
@@ -664,8 +666,8 @@ void programa(){
     consome(ABRE_PAR);
     consome(VOID);
     consome(FECHA_PAR);
+    printf("\tINPP \n");
     consome(ABRE_CHAVE);
-    printf("INPP \n");
     declaracoes();
     comandos();
     consome(FECHA_CHAVE);
@@ -675,7 +677,7 @@ void declaracoes(){
   while(lookahead == INT || lookahead == BOOL) {
     declaracao();
   }
-  printf("AMEM %i \n",total_variaveis);
+  printf("\tAMEM %i \n",total_variaveis);
 }
 
 void declaracao() {
@@ -700,46 +702,49 @@ void tipo(){
 void lista_variavel(){
     // Identificador_Struct identificador_atual;
    
-    // if(!isScanning){
-    //     AdicionarVariavel();
-    // }
-    // else{
-    //    bool isInArray = false;
-
-    //     for(int i = 0;i< total_variaveis;i++){
-    //         if (strcmp(tabela.array_identificadores[i]->nome, infoAtomo.atributo_ID) == 0){
-    //             isInArray = true;
-    //             printf("ARMZ %d \n",tabela.array_identificadores[i]->endereco);
-    //         }
-    //         if (!isInArray){
-    //             printf("Erro Semantico, %s não foi declarado",infoAtomo.atributo_ID);
-    //         }
-    //     }
+    if(!isScanning){
+        AdicionarVariavel();
+    }
+    else{
+       bool isInArray = false;
         
-    // }
+        for(int i = 0;i< total_variaveis;i++){
+            //printf("nome 1: %s \n",tabela.array_identificadores[i]->nome);
+            //printf("nome 2: %s \n",infoAtomo.atributo_ID);
+
+            if (strcmp(tabela.array_identificadores[i]->nome, infoAtomo.atributo_ID) == 0){
+                isInArray = true;
+                printf("\tARMZ %d \n",tabela.array_identificadores[i]->endereco);
+            }
+            if (!isInArray){
+                printf("Erro Semantico, %s não foi declarado\n",infoAtomo.atributo_ID);
+            }
+        }
+        
+    }
     
     consome(IDENTIFICADOR);
 
     if(lookahead == VIRGULA){
         while(lookahead == VIRGULA){
-            
-            // if(!isScanning){
-            //     AdicionarVariavel();
-            // }
-            // else{
-            //    bool isInArray = false;
-
-            // for(int i = 0;i< total_variaveis;i++){
-            //     if (strcmp(tabela.array_identificadores[i]->nome, infoAtomo.atributo_ID) == 0){
-            //         isInArray = true;
-            //     }
-            //     if (!isInArray){
-            //         printf("Erro Semantico, %s não foi declarado",infoAtomo.atributo_ID);
-            //     }
-            // }
-            // }
-
             consome(VIRGULA);
+            if(!isScanning){
+                AdicionarVariavel();
+            }
+            else{
+               bool isInArray = false;
+
+            for(int i = 0;i< total_variaveis;i++){
+                if (strcmp(tabela.array_identificadores[i]->nome, infoAtomo.atributo_ID) == 0){
+                    isInArray = true;
+                     printf("\tARMZ %d \n",tabela.array_identificadores[i]->endereco);
+                }
+                if (!isInArray){
+                    printf("Erro Semantico, %s não foi declarado",infoAtomo.atributo_ID);
+                }
+            }
+            }
+            
             consome(IDENTIFICADOR);
         }
     }
@@ -783,6 +788,21 @@ void bloco_comandos(){
 }
 
 void atribuicao(){
+    bool isInArray = false;
+        
+    for(int i = 0;i< total_variaveis;i++){
+        //printf("nome 1: %s \n",tabela.array_identificadores[i]->nome);
+        //printf("nome 2: %s \n",infoAtomo.atributo_ID);
+
+        if (strcmp(tabela.array_identificadores[i]->nome, infoAtomo.atributo_ID) == 0){
+            isInArray = true;
+            printf("\tARMZ %d \n",tabela.array_identificadores[i]->endereco);
+        }
+        if (!isInArray){
+            printf("Erro Semantico, %s não foi declarado\n",infoAtomo.atributo_ID);
+        }
+    }
+
     consome(IDENTIFICADOR);
     consome(ATRIBUICAO);
     expressao();
@@ -790,11 +810,16 @@ void atribuicao(){
 }
 
 void comando_if(){
+  int L1 = Proximo_rotulo();
+  int L2 = Proximo_rotulo();
   consome(IF);
   consome(ABRE_PAR);
   expressao();
   consome(FECHA_PAR);
+  printf("\tDSVF %d \n",L1);
   comando();
+  printf("\tDSVS %d \n",L2);
+  printf("L%d:NADA \n",L1);
   if(lookahead == ELSE) {
     consome(ELSE);
     comando();
@@ -802,11 +827,17 @@ void comando_if(){
 }
 
 void comando_while(){
+    int L1 = Proximo_rotulo();
+    int L2 = Proximo_rotulo();
     consome(WHILE);
+    printf("L%d:\tNADA\n",L1);
     consome(ABRE_PAR);
     expressao();
     consome(FECHA_PAR);
+    printf("\tDSVF L%d\n",L2);
     comando();
+    printf("\tDSVS L%d\n",L1);
+    printf("L%d:\tNADA\n",L2);
 }
 
 void comando_entrada(){
@@ -814,13 +845,11 @@ void comando_entrada(){
     consome(ABRE_PAR);
 
     isScanning = true;
+    printf("\tLEIT \n");
     lista_variavel();
-    printf("LEIT \n");
 
     consome(FECHA_PAR);
     consome(PONTO_VIRGULA);
-
-    
     
 }
 
@@ -868,21 +897,27 @@ void expressao_relacional(){
 
 void op_relacional(){
     if(lookahead == MENOR){
+        printf("\tCMME \n");
         consome(MENOR);
     }
     else if(lookahead == MENOR_IGUAL){
+        printf("\tCMEG \n");
         consome(MENOR_IGUAL);
     }
     else if(lookahead == COMPARACAO){
+        printf("\tCMIG \n");
         consome(COMPARACAO);
     }
     else if(lookahead == DIFERENTE_IGUAL){
+        printf("\tCMDG \n");
         consome(DIFERENTE_IGUAL);
     }
     else if(lookahead == MAIOR){
+        printf("\tCMMA \n");
         consome(MAIOR);
     }
     else if(lookahead == MAIOR_IGUAL){
+        printf("\tCMAG \n");
         consome(MAIOR_IGUAL);
     }
 }
@@ -893,10 +928,10 @@ void expressao_adicao() {
     while(lookahead == SOMA || lookahead == SUBTRACAO) {  
       if(lookahead == SOMA) {
         consome(SOMA);
-        printf("SOMA\n");
+        printf("\tSOMA\n");
       } else if(lookahead == SUBTRACAO) {
         consome(SUBTRACAO);
-        printf("SUBT\n");
+        printf("\tSUBT\n");
       }
       expressao_multi();
     }
@@ -909,11 +944,11 @@ void expressao_multi(){
         while(lookahead == MULTIPLICACAO || lookahead == DIVISAO){
             if(lookahead == MULTIPLICACAO){
                 consome(MULTIPLICACAO);
-                printf("MULTI\n");
+                printf("\tMULTI\n");
             }
             else if(lookahead == DIVISAO){
                 consome(DIVISAO);
-                printf("DIVI\n");
+                printf("\tDIVI\n");
             }
             operando();
         }
@@ -925,14 +960,13 @@ void operando(){
         Identificador_Struct atual;
         for(int i = 0;i<total_variaveis;i++){
             if (strcmp(tabela.array_identificadores[i]->nome,infoAtomo.atributo_ID) == 0){
-                printf("CRVL %d \n",tabela.array_identificadores[i]->endereco);
+                printf("\tCRVL %d \n",tabela.array_identificadores[i]->endereco);
             }
         }
-        
         consome(IDENTIFICADOR);
     }
     else if(lookahead == NUMERO){
-        printf("CRCT \n"); //valor do numero aqui
+        printf("\tCRCT \n"); //valor do numero aqui
         consome(NUMERO);
     }
     // else if(lookahead == TRUE){
@@ -951,7 +985,8 @@ void operando(){
 
 //crashando aqui
 void AdicionarVariavel(){
-    for(int i = 0;i<20;i++){
+    
+    for(int i = 0;i<total_variaveis;i++){
         if (strcmp(tabela.array_identificadores[i] -> nome,infoAtomo.atributo_ID) == 0){
             printf("JA EXISTE VARIAVEL, Erro semântico\n");
         }
@@ -964,4 +999,9 @@ void AdicionarVariavel(){
 
     tabela.array_identificadores[total_variaveis] = atual;
     total_variaveis++;
+}
+
+int Proximo_rotulo(){
+    contador++;
+    return contador;
 }

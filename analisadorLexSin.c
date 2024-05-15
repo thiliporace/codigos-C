@@ -702,33 +702,12 @@ void tipo(){
 }
 
 void lista_variavel(){
-    // Identificador_Struct identificador_atual;
    
     if(!isScanning){
         AdicionarVariavel();
     }
-    // else{
-    //    bool isInArray = false;
-    //     printf("\tLEIT \n");
-
-    //     for(int i = 0;i< total_variaveis;i++){
-    //         printf("nome 1: %s \n",tabela.array_identificadores[i]->nome);
-    //         printf("nome 2: %s \n",infoAtomo.atributo_ID);
-
-    //         if (strcmp(tabela.array_identificadores[i]->nome, infoAtomo.atributo_ID) == 0){
-    //             isInArray = true;
-    //             printf("\tARMZ %d \n",tabela.array_identificadores[i]->endereco);
-    //         }
-    //     }
-    //     if (!isInArray){
-    //         printf("Erro Semantico, %s não foi declarado\n",infoAtomo.atributo_ID);
-    //     }
-        
-    // }
 
     consome(IDENTIFICADOR);
-    //Pode dar problema
-    //total_variaveis++;
     
     while(lookahead == VIRGULA){
         
@@ -771,8 +750,6 @@ void lista_variavel(){
         }
 
         consome(IDENTIFICADOR);
-        //Pode dar problema
-        // total_variaveis++;
 
         }
         
@@ -837,7 +814,6 @@ void atribuicao(){
     consome(ATRIBUICAO);
     expressao();
 
-    //MARK: Problema ta aqui
     for(int i = 0;i< total_variaveis;i++){
         // printf("atribuicao nome 1: %s \n",tabela.array_identificadores[i]->nome);
         // printf("atribuicao nome 2: %s \n",atual.atributo_ID);
@@ -996,12 +972,14 @@ void expressao_adicao() {
     while(lookahead == SOMA || lookahead == SUBTRACAO) {  
       if(lookahead == SOMA) {
         consome(SOMA);
+        expressao_multi();
         printf("\tSOMA\n");
       } else if(lookahead == SUBTRACAO) {
         consome(SUBTRACAO);
+        expressao_multi();
         printf("\tSUBT\n");
       }
-      expressao_multi();
+      
     }
   }
 }
@@ -1012,20 +990,21 @@ void expressao_multi(){
         while(lookahead == MULTIPLICACAO || lookahead == DIVISAO){
             if(lookahead == MULTIPLICACAO){
                 consome(MULTIPLICACAO);
+                operando();
                 printf("\tMULT\n");
             }
             else if(lookahead == DIVISAO){
                 consome(DIVISAO);
+                operando();
                 printf("\tDIVI\n");
             }
-            operando();
+            
         }
     }
 }
 
 void operando(){
     if(lookahead == IDENTIFICADOR){
-        Identificador_Struct atual;
         for(int i = 0;i<total_variaveis;i++){
             if (strcmp(tabela.array_identificadores[i]->nome,infoAtomo.atributo_ID) == 0){
                 printf("\tCRVL %d \n",tabela.array_identificadores[i]->endereco);
@@ -1061,7 +1040,7 @@ void AdicionarVariavel(){
     }
 
     Identificador_Struct* atual = (Identificador_Struct*)malloc(sizeof(Identificador_Struct));
-    // Identificador_Struct* atual;
+    
     atual->endereco = total_variaveis;
     //printf("endereco: %d \n",atual->endereco);
     strcpy(atual->nome,infoAtomo.atributo_ID);

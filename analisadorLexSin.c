@@ -705,50 +705,70 @@ void lista_variavel(){
    
     if(!isScanning){
         AdicionarVariavel();
-        consome(IDENTIFICADOR);
     }
-    else{
-       bool isInArray = false;
-        printf("\tLEIT \n");
+    // else{
+    //    bool isInArray = false;
+    //     printf("\tLEIT \n");
 
-        for(int i = 0;i< total_variaveis;i++){
-            //printf("nome 1: %s \n",tabela.array_identificadores[i]->nome);
-            //printf("nome 2: %s \n",infoAtomo.atributo_ID);
+    //     for(int i = 0;i< total_variaveis;i++){
+    //         printf("nome 1: %s \n",tabela.array_identificadores[i]->nome);
+    //         printf("nome 2: %s \n",infoAtomo.atributo_ID);
 
-            if (strcmp(tabela.array_identificadores[i]->nome, infoAtomo.atributo_ID) == 0){
-                isInArray = true;
-                printf("\tARMZ %d \n",tabela.array_identificadores[i]->endereco);
-            }
-            if (!isInArray){
-                printf("Erro Semantico, %s não foi declarado\n",infoAtomo.atributo_ID);
-            }
-        }
-        consome(IDENTIFICADOR);
-    }
+    //         if (strcmp(tabela.array_identificadores[i]->nome, infoAtomo.atributo_ID) == 0){
+    //             isInArray = true;
+    //             printf("\tARMZ %d \n",tabela.array_identificadores[i]->endereco);
+    //         }
+    //     }
+    //     if (!isInArray){
+    //         printf("Erro Semantico, %s não foi declarado\n",infoAtomo.atributo_ID);
+    //     }
+        
+    // }
 
+    consome(IDENTIFICADOR);
     //Pode dar problema
     //total_variaveis++;
     
     while(lookahead == VIRGULA){
-        consome(VIRGULA);
         
         if(!isScanning){
+            consome(VIRGULA);
+            bool isInArray = false;
+
+        for(int i = 0;i< total_variaveis;i++){
+            printf("for loop nome 1: %s \n",tabela.array_identificadores[i]->nome);
+            printf("for loop nome 2: %s \n",infoAtomo.atributo_ID);
+            
+            if (strcmp(tabela.array_identificadores[i]->nome, infoAtomo.atributo_ID) == 0){
+                isInArray = true;
+            }
+            
+        }
+
+        if (!isInArray){
             AdicionarVariavel();
+        } 
             consome(IDENTIFICADOR);
         }
         else{
+            consome(VIRGULA);
             printf("\tLEIT \n");
             bool isInArray = false;
 
         for(int i = 0;i< total_variaveis;i++){
+            printf("scaneando nome 1: %s \n",tabela.array_identificadores[i]->nome);
+            printf("scaneando nome 2: %s \n",infoAtomo.atributo_ID);
+            
             if (strcmp(tabela.array_identificadores[i]->nome, infoAtomo.atributo_ID) == 0){
                 isInArray = true;
                 printf("\tARMZ %d \n",tabela.array_identificadores[i]->endereco);
             }
-            if (!isInArray){
-                printf("Erro Semantico, %s não foi declarado",infoAtomo.atributo_ID);
-            }
+            
         }
+        if (!isInArray){
+            printf("Erro Semantico, %s não foi declarado",infoAtomo.atributo_ID);
+        }
+
         consome(IDENTIFICADOR);
         //Pode dar problema
         // total_variaveis++;
@@ -803,21 +823,23 @@ void atribuicao(){
     for(int i = 0;i< total_variaveis;i++){
         //printf("nome 1: %s \n",tabela.array_identificadores[i]->nome);
         //printf("nome 2: %s \n",infoAtomo.atributo_ID);
-        if (!isInArray){
-            printf("Erro Semantico, %s não foi declarado\n",infoAtomo.atributo_ID);
+        if (strcmp(tabela.array_identificadores[i]->nome, infoAtomo.atributo_ID) == 0){
+            isInArray = true;
         }
+    }
+    if (!isInArray){
+        printf("Erro Semantico, %s não foi declarado\n",infoAtomo.atributo_ID);
     }
 
     consome(IDENTIFICADOR);
     consome(ATRIBUICAO);
     expressao();
 
+    //MARK: Problema ta aqui
     for(int i = 0;i< total_variaveis;i++){
         if (strcmp(tabela.array_identificadores[i]->nome, infoAtomo.atributo_ID) == 0){
-            isInArray = true;
-                printf("\tARMZ %d \n",tabela.array_identificadores[i]->endereco);
+            printf("\tARMZ %d \n",tabela.array_identificadores[i]->endereco);
         }
-            
     }
     consome(PONTO_VIRGULA);
 }
@@ -871,9 +893,10 @@ void comando_entrada(){
             isInArray = true;
                 printf("\tARMZ %d \n",tabela.array_identificadores[i]->endereco);
         }
-        if (!isInArray){
-            printf("Erro Semantico, %s não foi declarado",infoAtomo.atributo_ID);
-        }
+        
+    }
+    if (!isInArray){
+        printf("Erro Semantico, %s não foi declarado",infoAtomo.atributo_ID);
     }
 
     lista_variavel();
@@ -1036,10 +1059,12 @@ void AdicionarVariavel(){
     Identificador_Struct* atual = (Identificador_Struct*)malloc(sizeof(Identificador_Struct));
     // Identificador_Struct* atual;
     atual->endereco = total_variaveis;
+    //printf("endereco: %d \n",atual->endereco);
     strcpy(atual->nome,infoAtomo.atributo_ID);
-
+    //printf("nome: %s \n",atual->nome);
     tabela.array_identificadores[total_variaveis] = atual;
 
+    //printf("endereco salvo: %d \n",tabela.array_identificadores[total_variaveis]->endereco);
     total_variaveis++;
 }
 

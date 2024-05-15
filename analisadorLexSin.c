@@ -672,6 +672,7 @@ void programa(){
     printf("\tAMEM %i \n",total_variaveis);
     comandos();
     consome(FECHA_CHAVE);
+    printf("\tPARA\n");
 }
 
 void declaracoes(){
@@ -736,8 +737,8 @@ void lista_variavel(){
             bool isInArray = false;
 
         for(int i = 0;i< total_variaveis;i++){
-            printf("for loop nome 1: %s \n",tabela.array_identificadores[i]->nome);
-            printf("for loop nome 2: %s \n",infoAtomo.atributo_ID);
+            // printf("for loop nome 1: %s \n",tabela.array_identificadores[i]->nome);
+            // printf("for loop nome 2: %s \n",infoAtomo.atributo_ID);
             
             if (strcmp(tabela.array_identificadores[i]->nome, infoAtomo.atributo_ID) == 0){
                 isInArray = true;
@@ -756,8 +757,8 @@ void lista_variavel(){
             bool isInArray = false;
 
         for(int i = 0;i< total_variaveis;i++){
-            printf("scaneando nome 1: %s \n",tabela.array_identificadores[i]->nome);
-            printf("scaneando nome 2: %s \n",infoAtomo.atributo_ID);
+            // printf("scaneando nome 1: %s \n",tabela.array_identificadores[i]->nome);
+            // printf("scaneando nome 2: %s \n",infoAtomo.atributo_ID);
             
             if (strcmp(tabela.array_identificadores[i]->nome, infoAtomo.atributo_ID) == 0){
                 isInArray = true;
@@ -831,13 +832,16 @@ void atribuicao(){
         printf("Erro Semantico, %s não foi declarado\n",infoAtomo.atributo_ID);
     }
 
+    TInfoAtomo atual = infoAtomo;
     consome(IDENTIFICADOR);
     consome(ATRIBUICAO);
     expressao();
 
     //MARK: Problema ta aqui
     for(int i = 0;i< total_variaveis;i++){
-        if (strcmp(tabela.array_identificadores[i]->nome, infoAtomo.atributo_ID) == 0){
+        // printf("atribuicao nome 1: %s \n",tabela.array_identificadores[i]->nome);
+        // printf("atribuicao nome 2: %s \n",atual.atributo_ID);
+        if (strcmp(tabela.array_identificadores[i]->nome, atual.atributo_ID) == 0){
             printf("\tARMZ %d \n",tabela.array_identificadores[i]->endereco);
         }
     }
@@ -891,7 +895,7 @@ void comando_entrada(){
     for(int i = 0;i< total_variaveis;i++){
         if (strcmp(tabela.array_identificadores[i]->nome, infoAtomo.atributo_ID) == 0){
             isInArray = true;
-                printf("\tARMZ %d \n",tabela.array_identificadores[i]->endereco);
+            printf("\tARMZ %d \n",tabela.array_identificadores[i]->endereco);
         }
         
     }

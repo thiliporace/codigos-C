@@ -632,7 +632,7 @@ q2:
     } else if(*buffer == 'A'|| *buffer =='B' || *buffer =='C' || *buffer =='D' || *buffer =='E' || *buffer =='F') {
         buffer++;
         goto q2;
-    } else { // Isso aqui está meme
+    } else { 
         goto q3;
     }
     printf("Erro 3");
@@ -704,7 +704,19 @@ void tipo(){
 void lista_variavel(){
    
     if(!isScanning){
-        AdicionarVariavel();
+        bool isInArray = false;
+        for(int i = 0;i< total_variaveis;i++){
+            
+            if (strcmp(tabela.array_identificadores[i]->nome, infoAtomo.atributo_ID) == 0){
+                isInArray = true;
+                printf("\tA variavel %s ja existe, erro semântico\n",tabela.array_identificadores[i]->nome);
+            }
+            
+        }
+
+        if (!isInArray){
+            AdicionarVariavel();
+        }
     }
 
     consome(IDENTIFICADOR);
@@ -716,11 +728,10 @@ void lista_variavel(){
             bool isInArray = false;
 
         for(int i = 0;i< total_variaveis;i++){
-            // printf("for loop nome 1: %s \n",tabela.array_identificadores[i]->nome);
-            // printf("for loop nome 2: %s \n",infoAtomo.atributo_ID);
             
             if (strcmp(tabela.array_identificadores[i]->nome, infoAtomo.atributo_ID) == 0){
                 isInArray = true;
+                printf("\tA variavel %s ja existe, erro semântico\n",tabela.array_identificadores[i]->nome);
             }
             
         }
@@ -1030,14 +1041,7 @@ void operando(){
 
 }
 
-//crashando aqui
 void AdicionarVariavel(){
-    
-    for(int i = 0;i<total_variaveis;i++){
-        if (strcmp(tabela.array_identificadores[i] -> nome,infoAtomo.atributo_ID) == 0){
-            printf("JA EXISTE VARIAVEL, Erro semântico\n");
-        }
-    }
 
     Identificador_Struct* atual = (Identificador_Struct*)malloc(sizeof(Identificador_Struct));
     

@@ -76,7 +76,7 @@ char *buffer;
 // definicao de funcoes
 TInfoAtomo obter_atomo();
 TInfoAtomo reconhece_id();
-TAtomo reconhece_num();
+TInfoAtomo reconhece_num();
 TInfoAtomo reconhece_palavra_reservada();
 void reconhece_barra();
 TInfoAtomo reconhece_atribuicao();
@@ -197,7 +197,7 @@ TInfoAtomo obter_atomo(){
     }
     //3 caso: quando comecar com numero -> funcao de numeros
     else if(*buffer == '0' && *(buffer + 1) == 'x') {
-        infoAtomo.atomo = reconhece_num();
+        infoAtomo = reconhece_num();
     }
     //4 caso: se reconhecer um / -> funcao de divisao e comentario
     else if(*buffer == '/'){
@@ -605,41 +605,53 @@ q3:
     return infoAtomo;
 }
 
-TAtomo reconhece_num(){
+TInfoAtomo reconhece_num(){
+    TInfoAtomo infoAtomo;
+    int valor = 0;
+
 q0:
-    if(*buffer == '0' && *(++buffer) == 'x') { // Checa se o potencial número começa com o identificador de hexadecimal
+    if (*buffer == '0' && *(++buffer) == 'x') { // Checa se o potencial número começa com o identificador de hexadecimal
         buffer++;
         goto q1;
     }
-    printf("Erro 1");
-    return ERRO;
+    printf("Erro 1\n");
+    infoAtomo.atomo = ERRO;
+    return infoAtomo;
     
 q1:
-    if(isdigit(*buffer)) { // Se for um número ou A|B|C|D|E|F, vai para o próximo estado
+    if (isdigit(*buffer)) { // Se for um número
+        valor = valor * 16 + (*buffer - '0');  // Converte o caractere numérico para valor decimal e acumula
         buffer++;
         goto q2;
-    } else if(*buffer == 'A'|| *buffer =='B' || *buffer =='C' || *buffer =='D' || *buffer =='E' || *buffer =='F') {
+    } else if (*buffer >= 'A' && *buffer <= 'F') { // Se for uma letra de A a F
+        valor = valor * 16 + (*buffer - 'A' + 10);  // Converte o caractere alfabético para valor decimal e acumula
         buffer++;
         goto q2;
     }
-    printf("Erro 2");
-    return ERRO;
+    printf("Erro 2\n");
+    infoAtomo.atomo = ERRO;
+    return infoAtomo;
 
 q2: 
-    if(isdigit(*buffer)) { // Se for um número, A|B|C|D|E|F ou se terminar em ; termina
+    if (isdigit(*buffer)) { // Se for um número
+        valor = valor * 16 + (*buffer - '0');  // Converte o caractere numérico para valor decimal e acumula
         buffer++;
         goto q2;
-    } else if(*buffer == 'A'|| *buffer =='B' || *buffer =='C' || *buffer =='D' || *buffer =='E' || *buffer =='F') {
+    } else if (*buffer >= 'A' && *buffer <= 'F') { // Se for uma letra de A a F
+        valor = valor * 16 + (*buffer - 'A' + 10);  // Converte o caractere alfabético para valor decimal e acumula
         buffer++;
         goto q2;
     } else { 
         goto q3;
     }
-    printf("Erro 3");
-    return ERRO;
+    printf("Erro 3\n");
+    infoAtomo.atomo = ERRO;
+    return infoAtomo;
 
 q3: 
-    return NUMERO;
+    infoAtomo.atributo_numero = (float)valor;
+    infoAtomo.atomo = NUMERO;
+    return infoAtomo;
 }
 
 // Inicio funcoes analisador sintatico
@@ -1024,7 +1036,7 @@ void operando(){
         consome(IDENTIFICADOR);
     }
     else if(lookahead == NUMERO){
-        printf("\tCRCT \n"); //valor do numero aqui
+        printf("\tCRCT %.0f\n", infoAtomo.atributo_numero); //valor do numero aqui
         consome(NUMERO);
     }
     // else if(lookahead == TRUE){

@@ -56,7 +56,7 @@ char *buffer;
 // definicao de funcoes
 TInfoAtomo obter_atomo();
 TInfoAtomo reconhece_id();
-TAtomo reconhece_num();
+TInfoAtomo reconhece_num();
 TInfoAtomo reconhece_palavra_reservada();
 void reconhece_barra();
 TInfoAtomo reconhece_atribuicao();
@@ -176,7 +176,7 @@ TInfoAtomo obter_atomo(){
     }
     //3 caso: quando comecar com numero -> funcao de numeros
     else if(*buffer == '0' && *(buffer + 1) == 'x') {
-        infoAtomo.atomo = reconhece_num();
+        infoAtomo = reconhece_num();
     }
     //4 caso: se reconhecer um / -> funcao de divisao e comentario
     else if(*buffer == '/'){
@@ -581,7 +581,8 @@ q3:
     return infoAtomo;
 }
 
-TAtomo reconhece_num(){
+TInfoAtomo reconhece_num(){
+    TInfoAtomo infoAtomo;
     int valor = 0;
 
 q0:
@@ -590,7 +591,8 @@ q0:
         goto q1;
     }
     printf("Erro 1\n");
-    return ERRO;
+    infoAtomo.atomo = ERRO;
+    return infoAtomo;
     
 q1:
     if (isdigit(*buffer)) { // Se for um número
@@ -603,7 +605,8 @@ q1:
         goto q2;
     }
     printf("Erro 2\n");
-    return ERRO;
+    infoAtomo.atomo = ERRO;
+    return infoAtomo;
 
 q2: 
     if (isdigit(*buffer)) { // Se for um número
@@ -618,11 +621,13 @@ q2:
         goto q3;
     }
     printf("Erro 3\n");
-    return ERRO;
+    infoAtomo.atomo = ERRO;
+    return infoAtomo;
 
 q3: 
-    infoAtomo.atributo_numero = valor;
-    return NUMERO;
+    infoAtomo.atributo_numero = (float)valor;
+    infoAtomo.atomo = NUMERO;
+    return infoAtomo;
 }
 
 // Inicio funcoes analisador sintatico

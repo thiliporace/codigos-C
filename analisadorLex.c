@@ -93,6 +93,9 @@ int main(void){
         if( infoAtomo.atomo == IDENTIFICADOR)
             printf("| %s",infoAtomo.atributo_ID);
         printf("\n");
+        if(infoAtomo.atomo = NUMERO)
+            printf("| %s",infoAtomo.atributo_ID);
+        printf("\n");
         if( infoAtomo.atomo == EOS || infoAtomo.atomo == ERRO )
             break;
         
@@ -478,7 +481,7 @@ q2:
     } else if(*buffer == 'A'|| *buffer =='B' || *buffer =='C' || *buffer =='D' || *buffer =='E' || *buffer =='F') {
         buffer++;
         goto q2;
-    } else { // Isso aqui está meme
+    } else { 
         goto q3;
     }
     printf("Erro 3");

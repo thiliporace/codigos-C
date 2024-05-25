@@ -49,6 +49,7 @@ typedef struct{
     char atributo_ID[16];
 }TInfoAtomo;
 
+// unsigned int valor = 0;  
 int linha = 1;
 char *buffer;
 
@@ -140,13 +141,16 @@ int main(void) {
     fclose(arquivo);
         
     // funcao para transformar arquivo em string
-    printf("Analisando:\n%s \n\n", buffer);
-    printf("............................................... \n\n");
+    printf(".......................................... \n\n");
+    printf("Analisando:\n\n%s \n\n", buffer);
+    printf(".......................................... \n\n");
 
     // Depois de realizar a leitura do arquivo, começa a análise 
     infoAtomo = obter_atomo();
     lookahead = infoAtomo.atomo;
     programa();
+
+    printf(".......................................... \n\n");
 
     // Desalocar a memória do malloc 
     free(primeiro_lista);
@@ -248,7 +252,7 @@ TInfoAtomo obter_atomo(){
     else if(*buffer == '!'){
         infoAtomo = reconhece_diferente();
     }
-    // caso: se chegar ao final da string retorna EOS
+    //20 caso: se chegar ao final da string retorna EOS
     else if(*buffer == '\0')
         infoAtomo.atomo = EOS;
     
@@ -578,39 +582,46 @@ q3:
 }
 
 TAtomo reconhece_num(){
+    int valor = 0;
+
 q0:
-    if(*buffer == '0' && *(++buffer) == 'x') { // Checa se o potencial número começa com o identificador de hexadecimal
+    if (*buffer == '0' && *(++buffer) == 'x') { // Checa se o potencial número começa com o identificador de hexadecimal
         buffer++;
         goto q1;
     }
-    printf("Erro 1");
+    printf("Erro 1\n");
     return ERRO;
     
 q1:
-    if(isdigit(*buffer)) { // Se for um número ou A|B|C|D|E|F, vai para o próximo estado
+    if (isdigit(*buffer)) { // Se for um número
+        valor = valor * 16 + (*buffer - '0');  // Converte o caractere numérico para valor decimal e acumula
         buffer++;
         goto q2;
-    } else if(*buffer == 'A'|| *buffer =='B' || *buffer =='C' || *buffer =='D' || *buffer =='E' || *buffer =='F') {
+    } else if (*buffer >= 'A' && *buffer <= 'F') { // Se for uma letra de A a F
+        valor = valor * 16 + (*buffer - 'A' + 10);  // Converte o caractere alfabético para valor decimal e acumula
         buffer++;
         goto q2;
     }
-    printf("Erro 2");
+    printf("Erro 2\n");
     return ERRO;
 
 q2: 
-    if(isdigit(*buffer)) { // Se for um número, A|B|C|D|E|F ou se terminar em ; termina
+    if (isdigit(*buffer)) { // Se for um número
+        valor = valor * 16 + (*buffer - '0');  // Converte o caractere numérico para valor decimal e acumula
         buffer++;
         goto q2;
-    } else if(*buffer == 'A'|| *buffer =='B' || *buffer =='C' || *buffer =='D' || *buffer =='E' || *buffer =='F') {
+    } else if (*buffer >= 'A' && *buffer <= 'F') { // Se for uma letra de A a F
+        valor = valor * 16 + (*buffer - 'A' + 10);  // Converte o caractere alfabético para valor decimal e acumula
         buffer++;
         goto q2;
-    } else { // Isso aqui está meme
+    } else { 
         goto q3;
     }
-    printf("Erro 3");
+    printf("Erro 3\n");
     return ERRO;
 
 q3: 
+    infoAtomo.atributo_numero = valor;
     return NUMERO;
 }
 
@@ -622,12 +633,17 @@ void consome(TAtomo atomo){
 
         printf("%d# %s ",infoAtomo.linha, strAtomo[infoAtomo.atomo]);
         
-        if( infoAtomo.atomo == IDENTIFICADOR)
+        if(infoAtomo.atomo == NUMERO)
+            printf("| %f", infoAtomo.atributo_numero);
+
+        if(infoAtomo.atomo == IDENTIFICADOR)
             printf("| %s",infoAtomo.atributo_ID);
         printf("\n");
+
+        
     }
-    else{
-        printf("erro sintatico: esperado [%s] encontrado [%s], linha: %d \n",strAtomo[atomo],strAtomo[lookahead],infoAtomo.linha);
+    else {
+        printf("Erro sintatico: esperado [%s] encontrado [%s], linha: %d \n",strAtomo[atomo],strAtomo[lookahead],infoAtomo.linha);
         exit(1);
     }
 }

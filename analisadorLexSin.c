@@ -951,41 +951,52 @@ void expressao_logica() {
 void expressao_relacional(){
     expressao_adicao();
     if(lookahead == MENOR || lookahead == MENOR_IGUAL || lookahead == COMPARACAO || lookahead == DIFERENTE_IGUAL || lookahead == MAIOR || lookahead == MAIOR_IGUAL){
+        char op = lookahead;
         op_relacional();
-        //Para garantir ordem correta dos prints, o expressao_adicao() foi movido para dentro da op_relacional()
+        expressao_adicao();
+
+        switch (op){
+            case MENOR:
+            printf("\tCMME \n");
+            break;
+            case MENOR_IGUAL:
+            printf("\tCMEG \n");
+            break; 
+            case COMPARACAO:
+            printf("\tCMIG \n");
+            break; 
+            case DIFERENTE_IGUAL:
+            printf("\tCMDG \n");
+            break;
+            case MAIOR:
+            printf("\tCMMA \n");
+            break;
+            case MAIOR_IGUAL:
+            printf("\tCMAG \n");
+            break;  
+        }
+        
     }
 }
 
 void op_relacional(){
     if(lookahead == MENOR){
         consome(MENOR);
-        expressao_adicao();
-        printf("\tCMME \n");
     }
     else if(lookahead == MENOR_IGUAL){
         consome(MENOR_IGUAL);
-        expressao_adicao();
-        printf("\tCMEG \n");
     }
     else if(lookahead == COMPARACAO){
         consome(COMPARACAO);
-        expressao_adicao();
-        printf("\tCMIG \n");
     }
     else if(lookahead == DIFERENTE_IGUAL){
         consome(DIFERENTE_IGUAL);
-        expressao_adicao();
-        printf("\tCMDG \n");
     }
     else if(lookahead == MAIOR){
         consome(MAIOR);
-        expressao_adicao();
-        printf("\tCMMA \n");
     }
     else if(lookahead == MAIOR_IGUAL){
-        consome(MAIOR_IGUAL);
-        expressao_adicao();
-        printf("\tCMAG \n");
+        consome(MAIOR_IGUAL); 
     }
 }
 
